@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, render_template, url_for, flash, redirect, json
 import time
 import sql_functions
-from datetime import date
+from datetime import datetime, date
 import time
 
 app = Flask(__name__)
@@ -81,7 +81,7 @@ def history():
             total_time = total_time + t['time']
 
         newData2.append({
-            'date':     d,
+            'date':     datetime.strptime(d, '%Y-%m-%d').strftime('%d-%m-%Y'),
             'total':    total_time,
             'data':     newData[d][latest_time],
             'rows':     len(newData[d][latest_time])
