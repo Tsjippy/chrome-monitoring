@@ -1,0 +1,11 @@
+input.limit{
+    width: 50px;
+}
+
+.hidden{
+    display: none;
+}
+
+.details:hover{
+    background-color: cadetblue;
+}

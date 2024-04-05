@@ -1,0 +1,22 @@
+{
+	"manifest_version": 3,
+	"name": "Currenturl",
+	"description": "Fetches current tab url.",
+	"version": "0.1",
+	"author": "Ewald Harmsen",
+	"icons": {
+        "48":"icon.png"
+    },
+	"permissions": ["tabs", "activeTab", "storage", "scripting", "notifications"],
+	"background": {
+		"service_worker": "background.js"
+	},
+    "host_permissions": [
+        "http://127.0.0.1:5000/*",
+        "http://127.0.0.2:5000/*",
+        "https://*/*"
+    ],
+    "action": {
+        "default_title": "Click to show an alert"
+    }
+}
