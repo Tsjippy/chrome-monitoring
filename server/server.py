@@ -53,33 +53,6 @@ def history():
             db.add_db_entry('Limits', "'url', 'limit'", "'" + url + "'," + limit)
             flash('Limit saved succesfully', 'info')
 
-    data  = [
-        {
-            'date': '2024-04-05',
-            'total': 19,
-            'data':
-                [
-                    {
-                        'url': 'nas',
-                        'time': 4,
-                    },
-                    {
-                        'url': 'youtube.com',
-                        'time': 4,
-                    },
-                    {
-                        'url': '192.168.0.200',
-                        'time': 4,
-                    },
-                    {
-                        'url': 'nu.nl',
-                        'time': 5,
-                    },
-                ],
-            'rows': 4
-        },
-    ]
-
     data        = db.get_db_data('SELECT * from History')
 
     # first sort the data on date
@@ -127,7 +100,7 @@ def update_history():
     tabtimes         = request.form['tabtimes']
     
     if not tabtimes:
-        flash('A new limit is required')
+        flash('Tabtimes is required')
     else:
         tabtimes    = json.loads(tabtimes)
         print(tabtimes)
@@ -139,35 +112,6 @@ def update_history():
     
     return jsonify({'message': 'success!'})
 
-@app.route('/send_url', methods=['POST'])
-def send_url():
-    url         = request.form['url']
-    print("currently viewing: " + url_strip(url))
-    parent_url  = url_strip(url)
-
-    global url_timestamp
-    global url_viewtime
-    global prev_url
-
-    print("initial db prev tab: ", prev_url)
-    print("initial db timestamp: ", url_timestamp)
-    print("initial db viewtime: ", url_viewtime)
-
-    if parent_url not in url_timestamp.keys():
-        url_viewtime[parent_url] = 0
-
-    if prev_url != '':
-        time_spent = int(time.time() - url_timestamp[prev_url])
-        url_viewtime[prev_url] = url_viewtime[prev_url] + time_spent
-
-    x = int(time.time())
-    url_timestamp[parent_url] = x
-    prev_url = parent_url
-    print("final timestamps: ", url_timestamp)
-    print("final viewtime: ", url_viewtime[prev_url])
-
-    return jsonify({'message': 'success!'})
-
 @app.route('/get_limits', methods=['POST', "GET"])
 def get_limits():
     limits      = db.get_db_data('SELECT * from Limits')
@@ -175,23 +119,7 @@ def get_limits():
     newlimits   = {}
     for limit in limits:
         newlimits[limit['url']] = limit['limit']
-
-    limits           = {
-        "nas": 40,
-        "youtube.com": 40,
-        "192.168.0.200": 40,
-        "total": 120,
-        "default": 11,
-    }
     
     return jsonify(newlimits)
-
-@app.route('/quit_url', methods=['POST'])
-def quit_url():
-    resp_json = request.get_data()
-    print("Url closed: " + resp_json.decode())
-    return jsonify({'message': 'quit success!'})
-
-
 
 app.run(host='0.0.0.0', port=5000)
