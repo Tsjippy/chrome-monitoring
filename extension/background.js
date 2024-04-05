@@ -3,12 +3,11 @@ let tabTimes     = {};
 let warningTime  = 5; // minutes
 let counter      = 0;
 let limits       = {
-    "nas": 40,
     "youtube.com": 40,
-    "192.168.0.200": 40,
     "total": 120,
     "default": 11,
 }
+let serverAddress    = 'http://127.0.0.1:9000/'
 
 async function getLimits(){
     result  = await request("get_limits");
@@ -24,7 +23,6 @@ getLimits();
 setInterval(async () => {
     counter++;
 
-    console.log(counter)
     if((counter / 300)  % 1 === 0){
         console.log('test')
         let formData    = new FormData();
@@ -115,7 +113,7 @@ async function request(url, formData=''){
 
     try{
         result = await fetch(
-            'http://127.0.0.1:5000/'+url,
+            serverAddress+url,
             {
                 method: 'POST',
                 credentials: 'same-origin',

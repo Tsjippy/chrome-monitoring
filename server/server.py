@@ -10,6 +10,7 @@ url_timestamp               = {}
 url_viewtime                = {}
 prev_url                    = ""
 db                          = sql_functions.DB()
+flask_port                  = 9000
 
 def url_strip(url):
     if "http://" in url or "https://" in url:
@@ -67,7 +68,7 @@ def history():
         
         newData[d['date']][d['time']].append({
             'url':  d['url'],
-            'time': d['time_spent'],
+            'time': round(d['time_spent']/60), #show time in minutes
         })
 
     # than only keep the last time for each date
@@ -122,4 +123,4 @@ def get_limits():
     
     return jsonify(newlimits)
 
-app.run(host='0.0.0.0', port=5000)
+app.run(host='0.0.0.0', port=flask_port)

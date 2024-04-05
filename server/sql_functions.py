@@ -4,21 +4,17 @@ import sqlite3
 import os
 import logging
 
-
 logger      = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG) # (NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL)
 
-db_path 	= 'websites_log.sqlite3'
-
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
+    base_path   = os.path.dirname(os.path.realpath(__file__))+'/'
+        
+    print(base_path)
 
     return os.path.join(base_path, relative_path)
+    
+db_path 	= resource_path('websites_log.sqlite3')
 
 class DB:
     def __init__(self, sql_script=None):
@@ -32,7 +28,6 @@ class DB:
         logger.info(f'Importing database: {db_path}')
 
         db_exists   = os.path.isfile(db_path)
-        self.con    = sqlite3.connect(db_path)
 
         if not db_exists:
             self.create_db()
@@ -41,10 +36,18 @@ class DB:
         self.con    = sqlite3.connect(db_path)
 
     def create_db(self):
+        try:
+            self.connect_db()
+        except:
+            print('do I have permission to write to '+db_path+'?')
+            
         script      = resource_path('setup.sql')
+
         with open(script, 'r') as file:
             logger.info(f'Loading script {script} into database.')
             self.con.executescript(file.read())
+            
+        self.close_db()
 
     def get_db_data(self, query, dict=True):
         self.connect_db()

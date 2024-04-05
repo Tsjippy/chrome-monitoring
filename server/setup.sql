@@ -22,5 +22,5 @@ CREATE TABLE "Settings"(
 	"value"				TEXT
 );
 
-INSERT INTO Limits ('url', 'limit') VALUES('default', 30)
-INSERT INTO Limits ('url', 'limit') VALUES('total', 120)
+INSERT INTO Limits ('url', 'limit') VALUES('default', 30);
+INSERT INTO Limits ('url', 'limit') VALUES('total', 120);
