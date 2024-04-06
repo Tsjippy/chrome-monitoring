@@ -64,7 +64,6 @@ def history():
 
         if not d['time'] in newData[d['date']]:
             newData[d['date']][d['time']]  = []
-
         
         newData[d['date']][d['time']].append({
             'url':  d['url'],
@@ -72,7 +71,7 @@ def history():
         })
 
     # than only keep the last time for each date
-    newData2    = []
+    newData2    = {}
     for d in newData:
         latest_time = list(newData[d])[-1]
         total_time  = 0
@@ -80,7 +79,15 @@ def history():
         for t in newData[d][latest_time]:
             total_time = total_time + t['time']
 
-        newData2.append({
+        year    = int(datetime.strptime(d, '%Y-%m-%d').strftime('%Y'))
+        if not year in newData2:
+            newData2[year]  = {}
+
+        month   = datetime.strptime(d, '%Y-%m-%d').strftime('%B')
+        if not month in newData2[year]:
+            newData2[year][month]  = []
+
+        newData2[year][month].append({
             'date':     datetime.strptime(d, '%Y-%m-%d').strftime('%d-%m-%Y'),
             'total':    total_time,
             'data':     newData[d][latest_time],
@@ -94,7 +101,7 @@ def history():
     for limit in limits:
         newlimits[limit['url']] = limit['limit']
 
-    return render_template('history.html', data=newData2, limits=newlimits)
+    return render_template('history.html', data=newData2, limits=newlimits, curyear=datetime.now().year, curmonth=datetime.now().strftime('%B'))
 
 @app.route('/update_history', methods=['POST'])
 def update_history():

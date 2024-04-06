@@ -5,9 +5,7 @@ document.addEventListener('click', (ev) =>{
 
     if(target.matches('.alert')){
         target.remove();
-    }
-
-    if(target.matches('.details')){
+    }else if(target.matches('.details')){
         if(target.textContent == '+'){
             target.textContent  = '-';
             target.closest('tr').nextElementSibling.classList.remove('hidden');
@@ -15,6 +13,10 @@ document.addEventListener('click', (ev) =>{
             target.textContent  = '+';
             target.closest('tr').nextElementSibling.classList.add('hidden');
         }
+    }else if(target.dataset.year != undefined){
+        document.querySelector(`div[data-year="${target.dataset.year}"]`).classList.toggle('hidden');
+    }else if(target.dataset.month != undefined){
+        document.querySelector(`div[data-month="${target.dataset.month}"]`).classList.toggle('hidden');
     }
 })
 

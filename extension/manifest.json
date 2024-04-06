@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
-	"name": "Currenturl",
-	"description": "Fetches current tab url.",
+	"name": "Website Monitoring",
+	"description": "Fetches current tab url, stores it and closes it if spent to much time on it",
 	"version": "0.1",
 	"author": "Ewald Harmsen",
 	"icons": {
@@ -16,6 +16,11 @@
         "https://*/*"
     ],
     "action": {
-        "default_title": "Click to show an alert"
-    }
+        "default_title": "Click to show an alert",
+		"default_popup": "popup.html"
+    },
+	"options_ui": {
+		"page": "options.html",
+		"open_in_tab": false
+	}
 }
