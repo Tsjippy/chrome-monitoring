@@ -4,12 +4,14 @@ DROP TABLE IF EXISTS "Settings";
 
 CREATE TABLE "Limits"(
 	"id" 			INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	"user" 			TEXT,
 	"url" 			TEXT,
 	"limit" 		INTEGER
 );
 
 CREATE TABLE "History"(
 	"id" 			INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	"user" 			TEXT,
 	"url" 			TEXT,
 	"date"			TEXT,
 	"time" 			TEXT,
@@ -22,5 +24,5 @@ CREATE TABLE "Settings"(
 	"value"				TEXT
 );
 
-INSERT INTO Limits ('url', 'limit') VALUES('default', 30);
-INSERT INTO Limits ('url', 'limit') VALUES('total', 120);
+INSERT INTO Settings ('key', 'value') VALUES('default', 30);
+INSERT INTO Settings ('key', 'value') VALUES('total', 120);

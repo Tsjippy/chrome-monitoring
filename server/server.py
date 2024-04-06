@@ -6,11 +6,9 @@ import time
 
 app = Flask(__name__)
 app.config['SECRET_KEY']    = '1hhyjufosaip9fcids09if09ds8vuodsijfdious0d9f'
-url_timestamp               = {}
-url_viewtime                = {}
-prev_url                    = ""
 db                          = sql_functions.DB()
 flask_port                  = 9000
+settings                    = ''
 
 def url_strip(url):
     if "http://" in url or "https://" in url:
@@ -21,7 +19,9 @@ def url_strip(url):
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    users = db.get_db_data('SELECT DISTINCT user FROM History ORDER BY user')
+
+    return render_template('index.html', users=users)
 
 @app.route('/limits', methods=['GET', 'POST'])
 def limits():
@@ -34,7 +34,9 @@ def limits():
             db.update_db_data()
             flash('Limit saved succesfully', 'info')
 
-    limits      = db.get_db_data('SELECT * from Limits')
+    user   = request.form['username']
+
+    limits = db.get_db_data('SELECT * from Limits WHERE user="'+user+'"')
 
     return render_template('limits.html', limits=limits)
 
@@ -43,6 +45,7 @@ def history():
     if request.method == 'POST':
         limit   = request.form['limit']
         url     = request.form['url']
+        user    = request.form['username']
 
         if not limit:
             flash('A new limit is required')
@@ -51,7 +54,7 @@ def history():
         elif not url:
             flash('An url is required')
         else:
-            db.add_db_entry('Limits', "'url', 'limit'", "'" + url + "'," + limit)
+            db.add_db_entry('Limits', "'user','url', 'limit'", "'" + user + "','" + limit + "', '" + url + "'," + limit)
             flash('Limit saved succesfully', 'info')
 
     data        = db.get_db_data('SELECT * from History')
@@ -105,10 +108,13 @@ def history():
 
 @app.route('/update_history', methods=['POST'])
 def update_history():
-    tabtimes         = request.form['tabtimes']
+    tabtimes    = request.form['tabtimes']
+    user        = request.form['username']
     
     if not tabtimes:
         flash('Tabtimes is required')
+    elif not user:
+        flash('Username is required')
     else:
         tabtimes    = json.loads(tabtimes)
         print(tabtimes)
@@ -116,18 +122,34 @@ def update_history():
             if url == 'undefined':
                 continue
 
-            db.add_db_entry('History', "'url', 'date', 'time', time_spent", "'" + url + "','"+ str(date.today()) + "','" + time.strftime("%H:%M", time.localtime()) + "'," + str(spent))
+            db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", "'"+user+"','" + url + "','"+ str(date.today()) + "','" + time.strftime("%H:%M", time.localtime()) + "'," + str(spent))
     
     return jsonify({'message': 'success!'})
 
 @app.route('/get_limits', methods=['POST', "GET"])
 def get_limits():
-    limits      = db.get_db_data('SELECT * from Limits')
+    global settings
+    try:
+     user        = request.form['username']
+    except Exception as e:
+        print('exception!')
+        print(e)
+
+    limits      = db.get_db_data('SELECT * from Limits WHERE user="'+user+'"')
+
+    print(limits)
 
     newlimits   = {}
     for limit in limits:
         newlimits[limit['url']] = limit['limit']
+
+    for setting in settings:
+        newlimits[setting['key']] = setting['value']
+
+    print(newlimits)
     
     return jsonify(newlimits)
+
+settings      = db.get_db_data('SELECT * from Settings')
 
 app.run(host='0.0.0.0', port=flask_port)

@@ -9,8 +9,6 @@ logging.basicConfig(level=logging.DEBUG) # (NOTSET,DEBUG,INFO,WARNING,ERROR,CRIT
 
 def resource_path(relative_path):
     base_path   = os.path.dirname(os.path.realpath(__file__))+'/'
-        
-    print(base_path)
 
     return os.path.join(base_path, relative_path)
     

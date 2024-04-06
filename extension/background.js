@@ -7,10 +7,34 @@ let limits       = {
     "total": 120,
     "default": 11,
 }
-let serverAddress    = 'http://127.0.0.1:9000/'
+let serverAddress   = ''
+let username        = '';
 
 async function getLimits(){
-    result  = await request("get_limits");
+    result          = await chrome.storage.sync.get();
+
+    username        = result.name;
+    serverAddress   = result.server;
+    warningTime     = result.warning;
+
+    console.log(result.warning);
+    if(username == '' || serverAddress == '' || result.warning == undefined){
+        if (chrome.runtime.openOptionsPage) {
+            chrome.runtime.openOptionsPage();
+        } else {
+            window.open(chrome.runtime.getURL('options.html'));
+        }
+    }
+
+    if(serverAddress[serverAddress.length-1] != '/'){
+        serverAddress += '/';
+        console.log(serverAddress);
+    }
+
+    let formData    = new FormData();
+    formData.append('username', username)
+
+    result          = await request(`get_limits`, formData);
 
     if(result ){
         limits  = result;
@@ -23,9 +47,9 @@ getLimits();
 setInterval(async () => {
     counter++;
 
-    if((counter / 300)  % 1 === 0){
-        console.log('test')
+    if((counter / 300)  % 1 === 0 && username != ''){
         let formData    = new FormData();
+        formData.append('username', username);
         formData.append('tabtimes', JSON.stringify(tabTimes));
         request('update_history', formData)
     }
@@ -38,7 +62,10 @@ setInterval(async () => {
     }
     
     tabs        = await chrome.tabs.query({ currentWindow: true, active: true });
-
+    if(tabs.length < 1){
+        return;
+    }
+    
     activeTab = {
         'url':  tabs[0].url.split( '/' )[2],
         'id':   tabs[0].id
@@ -110,6 +137,11 @@ setInterval(async () => {
 async function request(url, formData=''){
     let response;
     let result;
+
+    if(serverAddress == ''){
+        console.error('no server address set')
+        return false;
+    }
 
     try{
         result = await fetch(

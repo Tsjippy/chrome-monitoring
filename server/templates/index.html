@@ -4,5 +4,11 @@
 {% block content %}
     Welcome to the monitoring server.<br>
     <br>
+    We have the following users registered on this server:<br>
+    {% for user in users%}
+        {{ user.user }}<br>
+    {% endfor %}
+    <br>
+    <br>
     <a href="/history">Check the history here</a>
 {% endblock %}
