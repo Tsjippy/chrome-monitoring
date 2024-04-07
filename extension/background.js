@@ -45,6 +45,8 @@ async function getLimits(){
         // use offline limits
         await chrome.storage.sync.get(["limits"]).then((result) => {
             limits  = result.limits;
+
+            console.log('Limits fetched: '+JSON.stringify(limits));
         });
     }
 }
@@ -54,8 +56,6 @@ getLimits();
 // check active tab each second
 setInterval(async () => {
     counter++;
-
-    console.log(username + counter)
 
     if((counter / 300)  % 1 === 0 && username != ''){
         let formData    = new FormData();
