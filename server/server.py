@@ -136,9 +136,12 @@ def history():
 def update_history():
     tabtimes    = request.form['tabtimes']
     user        = request.form['username'].lower()
+    dateStr     = request.form['date']
+    timeStr     = request.form['time']
 
     limitsSet   = db.get_db_data(f"SELECT * from Limits WHERE user='{user}'")
 
+    # add default limits
     if not limitsSet:
         settings   = db.get_db_data(f"SELECT * from Settings")
 
@@ -152,9 +155,7 @@ def update_history():
         if url == 'undefined':
             continue
 
-        curDate = str(date.today())
-        curTime = time.strftime("%H:%M", time.localtime())
-        values  = f"'{user}', '{url}', '{curDate}', '{curTime}', {spent}"
+        values  = f"'{user}', '{url}', '{dateStr}', '{timeStr}', {spent}"
         db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", values)
         
     return jsonify({'message': 'success!'})

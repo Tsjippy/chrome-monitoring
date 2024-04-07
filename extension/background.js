@@ -54,17 +54,81 @@ setInterval(async () => {
 
     if((counter / 300)  % 1 === 0 && username != ''){
         let formData    = new FormData();
+        const date      = new Date();
+        // use offline limits
+        let result      = await chrome.storage.local.get(["history"]);
+
+        let history     = result.history;
+
+        let dateStr     = date.toLocaleDateString("nl-NL", {
+            year:   "numeric",
+            month:  "2-digit",
+            day:    "2-digit",
+        });
+
+        let timeStr     = date.toLocaleTimeString("nl-NL", {
+            hour:   '2-digit', 
+            minute: '2-digit'
+        });
+
         formData.append('username', username);
+        formData.append('date', dateStr);
+        formData.append('time', timeStr);
         formData.append('tabtimes', JSON.stringify(tabTimes));
-        let result  = request('update_history', formData)
+
+        result  = await request('update_history', formData);
 
         if(!result){
-            // use offline limits
-            let history     = await chrome.storage.local.get(["history"]);
-            console.log(history)
+            if ( history == undefined ){
+                history = {};
+            }
+
+            if ( history[dateStr] == undefined ){
+                history[dateStr] = {};
+            }
+
+            history[dateStr][timeStr] = tabTimes;
+
+            for (const [dateStr, times] of Object.entries(history)) {
+                console.log(`${dateStr}: ${times}`);
+                for (const [time, tabtimes] of Object.entries(times)) {
+                    console.log(`${time}: ${tabtimes}`);
+                }
+            }
             
             // store history locally
             await chrome.storage.local.set({'history': history });
+        }else if( history != undefined){
+            let succes  = true;
+            // Upload offline data
+
+            // loop over all dates
+            for (const [dateStr, times] of Object.entries(history)) {
+                //loop over all times
+                for (const [time, tabtimes] of Object.entries(times)) {
+                    formData    = new FormData();
+                    formData.append('username', username);
+                    formData.append('date', dateStr);
+                    formData.append('time', time);
+                    formData.append('tabtimes', JSON.stringify(tabtimes));
+
+                    result  = await request('update_history', formData);
+
+                    if(!result){
+                        succes = false;
+                        break;
+                    }
+                }
+
+                if(!succes){
+                    break;
+                }
+            }
+
+            // all data succesfully uploaded, remove from storage
+            if(succes){
+                chrome.storage.local.remove(['history']);
+            }
         }
     }
 
