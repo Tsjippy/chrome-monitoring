@@ -173,11 +173,6 @@ def get_limits():
     newlimits   = {}
     for limit in limits:
         newlimits[limit['url']] = limit['limit']
-
-    for setting in settings:
-        newlimits[setting['key']] = setting['value']
-
-    print(newlimits)
     
     return jsonify(newlimits)
 

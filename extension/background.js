@@ -1,12 +1,8 @@
-let activeTab    = null;
-let tabTimes     = {};
-let warningTime  = 5; // minutes
-let counter      = 0;
-let limits       = {
-    "youtube.com": 40,
-    "total": 120,
-    "default": 11,
-}
+let activeTab       = null;
+let tabTimes        = {};
+let warningTime     = 5; // minutes
+let counter         = 0;
+let limits          = {};
 let serverAddress   = ''
 let username        = '';
 
@@ -17,7 +13,6 @@ async function getLimits(){
     serverAddress   = result.server;
     warningTime     = result.warning;
 
-    console.log(result.warning);
     if(username == '' || serverAddress == '' || result.warning == undefined){
         if (chrome.runtime.openOptionsPage) {
             chrome.runtime.openOptionsPage();
@@ -28,7 +23,6 @@ async function getLimits(){
 
     if(serverAddress[serverAddress.length-1] != '/'){
         serverAddress += '/';
-        console.log(serverAddress);
     }
 
     let formData    = new FormData();
@@ -38,6 +32,20 @@ async function getLimits(){
 
     if(result ){
         limits  = result;
+
+        console.log('storing limits')
+
+        console.log(typeof(limits))
+
+        // store for offline usage
+        await chrome.storage.sync.set({'limits': limits });
+    }else{
+        console.log('getting offline limits');
+
+        // use offline limits
+        await chrome.storage.sync.get(["limits"]).then((result) => {
+            limits  = result.limits;
+        });
     }
 }
 
@@ -46,6 +54,8 @@ getLimits();
 // check active tab each second
 setInterval(async () => {
     counter++;
+
+    console.log(username + counter)
 
     if((counter / 300)  % 1 === 0 && username != ''){
         let formData    = new FormData();
