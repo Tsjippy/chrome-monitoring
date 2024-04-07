@@ -152,7 +152,9 @@ def update_history():
         if url == 'undefined':
             continue
 
-        values   = f"'{user}', '{url}', '{str(date.today())}', '{time.strftime("%H:%M", time.localtime())}', {spent}"
+        curDate = str(date.today())
+        curTime = time.strftime("%H:%M", time.localtime())
+        values  = f"'{user}', '{url}', '{curDate}', '{curTime}', {spent}"
         db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", values)
         
     return jsonify({'message': 'success!'})

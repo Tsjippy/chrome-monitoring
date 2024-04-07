@@ -32,11 +32,6 @@ async function getLimits(){
 
     if(result ){
         limits  = result;
-
-        console.log('storing limits')
-
-        console.log(typeof(limits))
-
         // store for offline usage
         await chrome.storage.sync.set({'limits': limits });
     }else{
@@ -61,7 +56,16 @@ setInterval(async () => {
         let formData    = new FormData();
         formData.append('username', username);
         formData.append('tabtimes', JSON.stringify(tabTimes));
-        request('update_history', formData)
+        let result  = request('update_history', formData)
+
+        if(!result){
+            // use offline limits
+            let history     = await chrome.storage.local.get(["history"]);
+            console.log(history)
+            
+            // store history locally
+            await chrome.storage.local.set({'history': history });
+        }
     }
 
     let currentWindow   = await chrome.windows.getCurrent();
