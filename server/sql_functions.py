@@ -7,7 +7,7 @@ import logging
 logger      = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG) # (NOTSET,DEBUG,INFO,WARNING,ERROR,CRITICAL)
 
-def resource_path(relative_path):
+def resource_path(relative_path=''):
     base_path   = os.path.dirname(os.path.realpath(__file__))+'/'
 
     return os.path.join(base_path, relative_path)
@@ -27,13 +27,22 @@ class DB:
 
         db_exists   = os.path.isfile(db_path)
 
+        if db_exists and not os.access(db_path, os.W_OK):
+            raise Exception("Database is not writable!")
+
         if not db_exists:
             self.create_db()
 
     def connect_db(self):
+        if not os.access(db_path, os.W_OK):
+            raise Exception("Database is not writable!")
+        
         self.con    = sqlite3.connect(db_path)
 
     def create_db(self):
+        if not os.access(resource_path(), os.W_OK):
+            raise Exception("Database folder is not writable!")
+        
         try:
             self.connect_db()
         except:

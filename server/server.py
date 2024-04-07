@@ -74,8 +74,6 @@ def history():
     elif request.method == 'GET':
         user = request.args.get('user')
 
-    print(user)
-
     data        = db.get_db_data('SELECT * from History')
 
     # first sort the data on date
@@ -89,24 +87,43 @@ def history():
 
         if not d['time'] in newData[d['user']][d['date']]:
             newData[d['user']][d['date']][d['time']]  = []
+
+        seconds   = d['time_spent']
+        hour      = seconds // 3600
+        seconds    %= 3600
+        minutes   = seconds // 60
+        seconds    %= 60
+
+        if hour == 0 and minutes == 0:
+            spent = str(seconds) + ' (s)'
+        elif hour == 0 :
+            spent = str(minutes)
+        else:
+            spent = f"{hour}:{minutes}"
         
         newData[d['user']][d['date']][d['time']].append({
-            'url':  d['url'],
-            'time': round(d['time_spent']/60), #show time in minutes
+            'url':      d['url'],
+            'time':     spent, #show time in minutes
+            'seconds':  d['time_spent']
         })
 
     # than only keep the last time for each date
     newData2    = {}
+
+    # loop over the users
     for u in newData:
         if not u in newData2:
             newData2[u]  = {}
 
+        # loop over the dates
         for d in newData[u]:
+            # get the last timestamp
             latest_time = list(newData[u][d])[-1]
             total_time  = 0
 
+            # calculate the total of all visited websites together
             for t in newData[u][d][latest_time]:
-                total_time = total_time + t['time']
+                total_time = total_time + t['seconds']
 
             year    = int(datetime.strptime(d, '%Y-%m-%d').strftime('%Y'))
             if not year in newData2[u]:
