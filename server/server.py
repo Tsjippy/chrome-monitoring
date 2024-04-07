@@ -23,79 +23,105 @@ def index():
 
     return render_template('index.html', users=users)
 
-@app.route('/limits', methods=['GET', 'POST'])
+@app.route('/limits/', methods=['GET', 'POST'])
 def limits():
     if request.method == 'POST':
+        user    = request.form['user']
         limit   = int(request.form['limit'])
+        url     = request.form['url']
 
         if not limit:
             flash('A new limit is required')
+        elif not user:
+            flash('An user is required')
+        elif not url:
+            flash('An url is required')
         else:
-            db.update_db_data()
+            query   = f"UPDATE Limits SET 'limit' = {limit} WHERE user='{user}' AND url='{url}'"
+            print(query)
+            db.update_db_data(query)
             flash('Limit saved succesfully', 'info')
+    
+    limits      = db.get_db_data(f"SELECT * from Limits")
+    newLimits  = {}
 
-    user   = request.form['username']
+    for limit in limits:
+        if not limit['user'] in newLimits:
+            newLimits[limit['user']]  = []
 
-    limits = db.get_db_data('SELECT * from Limits WHERE user="'+user+'"')
+        newLimits[limit['user']].append({
+            'url':      limit['url'],
+            'limit':    limit['limit'], #show time in minutes
+        })
+    
+    print(newLimits)
 
-    return render_template('limits.html', limits=limits)
+    return render_template('limits.html', limits=newLimits, usercount=len(newLimits))
 
 @app.route('/history', methods=['GET', 'POST'])
 def history():
     if request.method == 'POST':
         limit   = request.form['limit']
         url     = request.form['url']
-        user    = request.form['username']
+        user    = request.form['user']
 
-        if not limit:
-            flash('A new limit is required')
-        elif int(limit) < 5:
+        if int(limit) < 5:
             flash('Limit should be greater than 5 minutes')
-        elif not url:
-            flash('An url is required')
         else:
-            db.add_db_entry('Limits', "'user','url', 'limit'", "'" + user + "','" + limit + "', '" + url + "'," + limit)
+            values   = f"'{user}', '{url}', {limit}"
+            db.add_db_entry('Limits', "'user','url', 'limit'", values)
             flash('Limit saved succesfully', 'info')
+    elif request.method == 'GET':
+        user = request.args.get('user')
+
+    print(user)
 
     data        = db.get_db_data('SELECT * from History')
 
     # first sort the data on date
     newData     = {}
     for d in data:
-        if not d['date'] in newData:
-            newData[d['date']]  = {}
+        if not d['user'] in newData:
+            newData[d['user']]  = {}
 
-        if not d['time'] in newData[d['date']]:
-            newData[d['date']][d['time']]  = []
+        if not d['date'] in newData[d['user']]:
+            newData[d['user']][d['date']]  = {}
+
+        if not d['time'] in newData[d['user']][d['date']]:
+            newData[d['user']][d['date']][d['time']]  = []
         
-        newData[d['date']][d['time']].append({
+        newData[d['user']][d['date']][d['time']].append({
             'url':  d['url'],
             'time': round(d['time_spent']/60), #show time in minutes
         })
 
     # than only keep the last time for each date
     newData2    = {}
-    for d in newData:
-        latest_time = list(newData[d])[-1]
-        total_time  = 0
+    for u in newData:
+        if not u in newData2:
+            newData2[u]  = {}
 
-        for t in newData[d][latest_time]:
-            total_time = total_time + t['time']
+        for d in newData[u]:
+            latest_time = list(newData[u][d])[-1]
+            total_time  = 0
 
-        year    = int(datetime.strptime(d, '%Y-%m-%d').strftime('%Y'))
-        if not year in newData2:
-            newData2[year]  = {}
+            for t in newData[u][d][latest_time]:
+                total_time = total_time + t['time']
 
-        month   = datetime.strptime(d, '%Y-%m-%d').strftime('%B')
-        if not month in newData2[year]:
-            newData2[year][month]  = []
+            year    = int(datetime.strptime(d, '%Y-%m-%d').strftime('%Y'))
+            if not year in newData2[u]:
+                newData2[u][year]  = {}
 
-        newData2[year][month].append({
-            'date':     datetime.strptime(d, '%Y-%m-%d').strftime('%d-%m-%Y'),
-            'total':    total_time,
-            'data':     newData[d][latest_time],
-            'rows':     len(newData[d][latest_time])
-        })
+            month   = datetime.strptime(d, '%Y-%m-%d').strftime('%B')
+            if not month in newData2[u][year]:
+                newData2[u][year][month]  = []
+
+            newData2[u][year][month].append({
+                'date':     datetime.strptime(d, '%Y-%m-%d').strftime('%d-%m-%Y'),
+                'total':    total_time,
+                'data':     newData[u][d][latest_time],
+                'rows':     len(newData[u][d][latest_time])
+            })
 
     limits      = db.get_db_data('SELECT * from Limits')
 
@@ -104,38 +130,43 @@ def history():
     for limit in limits:
         newlimits[limit['url']] = limit['limit']
 
-    return render_template('history.html', data=newData2, limits=newlimits, curyear=datetime.now().year, curmonth=datetime.now().strftime('%B'))
+    return render_template('history.html', data=newData2, limits=newlimits, curyear=datetime.now().year, curmonth=datetime.now().strftime('%B'), curuser=user)
 
 @app.route('/update_history', methods=['POST'])
 def update_history():
     tabtimes    = request.form['tabtimes']
-    user        = request.form['username']
-    
-    if not tabtimes:
-        flash('Tabtimes is required')
-    elif not user:
-        flash('Username is required')
-    else:
-        tabtimes    = json.loads(tabtimes)
-        print(tabtimes)
-        for url, spent in tabtimes.items():
-            if url == 'undefined':
-                continue
+    user        = request.form['username'].lower()
 
-            db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", "'"+user+"','" + url + "','"+ str(date.today()) + "','" + time.strftime("%H:%M", time.localtime()) + "'," + str(spent))
+    limitsSet   = db.get_db_data(f"SELECT * from Limits WHERE user='{user}'")
+
+    if not limitsSet:
+        settings   = db.get_db_data(f"SELECT * from Settings")
+
+        for limit in settings:
+            values   = f"'{user}', '{limit['key']}', {limit['value']}"
+            db.add_db_entry('Limits', "'user','url', 'limit'", values)
     
+    tabtimes    = json.loads(tabtimes)
+    print(tabtimes)
+    for url, spent in tabtimes.items():
+        if url == 'undefined':
+            continue
+
+        values   = f"'{user}', '{url}', '{str(date.today())}', '{time.strftime("%H:%M", time.localtime())}', {spent}"
+        db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", values)
+        
     return jsonify({'message': 'success!'})
 
 @app.route('/get_limits', methods=['POST', "GET"])
 def get_limits():
     global settings
     try:
-     user        = request.form['username']
+        user        = request.form['username']
     except Exception as e:
         print('exception!')
         print(e)
 
-    limits      = db.get_db_data('SELECT * from Limits WHERE user="'+user+'"')
+    limits      = db.get_db_data(f"SELECT * from Limits WHERE user='{user}'")
 
     print(limits)
 

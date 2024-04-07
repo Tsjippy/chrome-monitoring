@@ -3,67 +3,73 @@
 {% block title %} Home {% endblock %}
 {% block content %}
         <div id="log">
-            {% for year in data%}
-                <button type="button" data-year="{{ year }}">{{ year }}</button>
-                
-                    <div class="year-wrapper {% if curyear != year %} hidden {% endif %}" data-year="{{ year }}">
-                    {% for month in data[year] %}
-                        <button type="button" data-month="{{ month }}">{{ month }}</button>
+            {% for user in data %}
+                <button type="button" class="user-choice" data-user="{{ user }}">{{ user|title }}</button>
+                <div class="user-wrapper {% if curuser != user %} hidden {% endif %}" data-user="{{ user }}">
+                    {% for year in data[user] %}
+                        <button type="button" data-year="{{ year }}">{{ year }}</button>
+                        
+                            <div class="year-wrapper {% if curyear != year %} hidden {% endif %}" data-year="{{ year }}">
+                            {% for month in data[user][year] %}
+                                <button type="button" data-month="{{ month }}">{{ month }}</button>
 
-                        <div class="month-wrapper {% if curmonth != month %} hidden {% endif %}" data-month="{{ month }}">                       
-                            <table class="table table-striped table-hover">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                        <th>Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for d in data[year][month] %}
-                                        <tr>
-                                            <td>{{ d['date'] }}</td>
-                                            <td>{{ d['total'] }}</td>
-                                            <td><button  class="details" type='button'>+</button></td>
-                                        </tr>
+                                <div class="month-wrapper {% if curmonth != month %} hidden {% endif %}" data-month="{{ month }}">                       
+                                    <table class="table table-striped table-hover">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Time</th>
+                                                <th>Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for d in data[user][year][month] %}
+                                                <tr>
+                                                    <td>{{ d['date'] }}</td>
+                                                    <td>{{ d['total'] }}</td>
+                                                    <td><button  class="details" type='button'>+</button></td>
+                                                </tr>
 
-                                        <tr class="hidden">
-                                            <td colspan="3">
-                                                <table class="table table-striped table-hover">
-                                                    <thead class="thead-light">
-                                                        <tr>
-                                                            <th>Url</th>
-                                                            <th>Time</th>
-                                                            <th>Limit</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for i in range(0, d['rows']) %}
-                                                            <tr>
-                                                                <td>{{ d['data'][i]['url'] }} </td>
-                                                                <td>{{ d['data'][i]['time'] }} </td>
-                                                                <td>
-                                                                    {% if limits[d['data'][i]['url']] %}
-                                                                        {{ limits[d['data'][i]['url']] }}
-                                                                    {% else %}
-                                                                        <form method="post">
-                                                                            <input type="hidden" class="limit" name="url" value="{{ d['data'][i]['url'] }}">
-                                                                            <input type="number" class="limit" name="limit" required>
+                                                <tr class="hidden">
+                                                    <td colspan="3">
+                                                        <table class="table table-striped table-hover">
+                                                            <thead class="thead-light">
+                                                                <tr>
+                                                                    <th>Url</th>
+                                                                    <th>Time</th>
+                                                                    <th>Limit</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for i in range(0, d['rows']) %}
+                                                                    <tr>
+                                                                        <td>{{ d['data'][i]['url'] }} </td>
+                                                                        <td>{{ d['data'][i]['time'] }} </td>
+                                                                        <td>
+                                                                            {% if limits[d['data'][i]['url']] %}
+                                                                                {{ limits[d['data'][i]['url']] }}
+                                                                            {% else %}
+                                                                                <form method="post">
+                                                                                    <input type="hidden" name="url" value="{{ d['data'][i]['url'] }}">
+                                                                                    <input type="hidden" name="user" value="{{ user }}">
+                                                                                    <input type="number" class="limit" name="limit" required>
+                                                    
+                                                                                    <button type="submit" class="btn btn-primary">Save limit</button>
+                                                                                </form>
+                                                                            {% endif %}
+                                                                        </td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
                                             
-                                                                            <button type="submit" class="btn btn-primary">Save limit</button>
-                                                                        </form>
-                                                                    {% endif %}
-                                                                </td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    
-                                </tbody>
-                            </table>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endfor %}
                         </div>
                     {% endfor %}
                 </div>

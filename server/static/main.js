@@ -17,6 +17,8 @@ document.addEventListener('click', (ev) =>{
         document.querySelector(`div[data-year="${target.dataset.year}"]`).classList.toggle('hidden');
     }else if(target.dataset.month != undefined){
         document.querySelector(`div[data-month="${target.dataset.month}"]`).classList.toggle('hidden');
+    }else if(target.dataset.user != undefined){
+        document.querySelector(`div[data-user="${target.dataset.user}"]`).classList.toggle('hidden');
     }
 })
 

@@ -82,6 +82,9 @@ class DB:
         self.connect_db()
 
         logger.info('Running query: ' + query)
+
+        print(query)
+        
         cur = self.con.execute(query)
         self.con.commit()
 
