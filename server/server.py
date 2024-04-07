@@ -124,6 +124,8 @@ def history():
             # calculate the total of all visited websites together
             for t in newData[u][d][latest_time]:
                 total_time = total_time + t['seconds']
+            
+            total_time = total_time // 60 # convert to minutes
 
             year    = int(datetime.strptime(d, '%Y-%m-%d').strftime('%Y'))
             if not year in newData2[u]:
