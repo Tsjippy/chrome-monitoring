@@ -60,7 +60,7 @@ setInterval(async () => {
 
         let history     = result.history;
 
-        let dateStr     = date.toLocaleDateString("nl-NL", {
+        let dateStr     = date.toLocaleDateString("fr-CA", {
             year:   "numeric",
             month:  "2-digit",
             day:    "2-digit",
