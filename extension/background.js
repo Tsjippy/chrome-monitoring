@@ -24,8 +24,8 @@ async function initialize(){
     }
 
     // get stored usage from today
-    const date      = new Date();
-    let dateStr     = date.toLocaleDateString("fr-CA", {
+    let d       = new Date();
+    let dateStr = d.toLocaleDateString("fr-CA", {
         year:   "numeric",
         month:  "2-digit",
         day:    "2-digit",
@@ -34,6 +34,18 @@ async function initialize(){
     let result      = await chrome.storage.local.get([dateStr]);
     if(result[dateStr] != undefined){
         tabTimes    = result[dateStr];
+
+        chrome.storage.local.remove([dateStr]);
+    }
+
+    // Clean up local storage
+    result      = await chrome.storage.local.get();
+
+    for (const [key, data] of Object.entries(result)) {
+        if( key == 'history'){
+            continue;
+        }
+        chrome.storage.local.remove([key]);
     }
 
     // get website limits from the server
@@ -67,9 +79,9 @@ setInterval(async () => {
     if((counter / 300 )  % 1 === 0 && username != ''){
 
         let formData    = new FormData();
-        const date      = new Date();
+        const d         = new Date();
 
-        let dateStr     = date.toLocaleDateString("fr-CA", {
+        let dateStr     = d.toLocaleDateString("fr-CA", {
             year:   "numeric",
             month:  "2-digit",
             day:    "2-digit",
@@ -78,7 +90,7 @@ setInterval(async () => {
         // store tabtimes locally to use when rebooting extension or chrome
         let result  = await chrome.storage.local.set({ [dateStr] : tabTimes });
 
-        let timeStr     = date.toLocaleTimeString("nl-NL", {
+        let timeStr     = d.toLocaleTimeString("nl-NL", {
             hour:   '2-digit', 
             minute: '2-digit'
         });
