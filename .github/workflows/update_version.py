@@ -35,10 +35,10 @@ try:
     newTotal    = total
 
     # Remove emty sections
-    for x in ["Added", "Changed", "Fixed"]:
+    for x in ["Added", "Changed", "Fixed", "Updated"]:
         pattern = r'(### '+x+'[\s\S]*'
 
-        if(x != 'Fixed'):
+        if(x != 'Updated'):
             pattern = pattern+'?)###'
         else:
             pattern = pattern+')'
