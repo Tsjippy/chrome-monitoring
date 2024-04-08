@@ -5,7 +5,7 @@ import datetime
 import json
 
 # load plugin file
-txt         = Path('manifest.json').read_text()
+txt         = Path('/extension/manifest.json').read_text()
 
 print(txt)
 newVersion  = sys.argv[1]
