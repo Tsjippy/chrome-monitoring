@@ -6,14 +6,16 @@ let limits          = {};
 let serverAddress   = ''
 let username        = '';
 
-async function getLimits(){
-    result          = await chrome.storage.sync.get();
+async function initialize(){
+    // get extension settings from sync
+    syncStorage     = await chrome.storage.sync.get();
 
-    username        = result.name;
-    serverAddress   = result.server;
-    warningTime     = result.warning;
+    username        = syncStorage.name;
+    serverAddress   = syncStorage.server;
+    warningTime     = syncStorage.warning;
 
-    if(username == '' || serverAddress == '' || result.warning == undefined){
+    if(syncStorage.name == undefined || syncStorage.server == undefined || syncStorage.warning == undefined || username == '' || serverAddress == ''){
+        // redirect to options page if needed
         if (chrome.runtime.openOptionsPage) {
             chrome.runtime.openOptionsPage();
         } else {
@@ -21,10 +23,20 @@ async function getLimits(){
         }
     }
 
-    if(serverAddress[serverAddress.length-1] != '/'){
-        serverAddress += '/';
+    // get stored usage from today
+    const date      = new Date();
+    let dateStr     = date.toLocaleDateString("fr-CA", {
+        year:   "numeric",
+        month:  "2-digit",
+        day:    "2-digit",
+    });
+
+    let result      = await chrome.storage.local.get([dateStr]);
+    if(result[dateStr] != undefined){
+        tabTimes    = result[dateStr];
     }
 
+    // get website limits from the server
     let formData    = new FormData();
     formData.append('username', username)
 
@@ -46,19 +58,16 @@ async function getLimits(){
     }
 }
 
-getLimits();
+initialize();
 
 // check active tab each second
 setInterval(async () => {
     counter++;
 
-    if((counter / 300)  % 1 === 0 && username != ''){
+    if((counter / 300 )  % 1 === 0 && username != ''){
+
         let formData    = new FormData();
         const date      = new Date();
-        // use offline limits
-        let result      = await chrome.storage.local.get(["history"]);
-
-        let history     = result.history;
 
         let dateStr     = date.toLocaleDateString("fr-CA", {
             year:   "numeric",
@@ -66,17 +75,25 @@ setInterval(async () => {
             day:    "2-digit",
         });
 
+        // store tabtimes locally to use when rebooting extension or chrome
+        let result  = await chrome.storage.local.set({ [dateStr] : tabTimes });
+
         let timeStr     = date.toLocaleTimeString("nl-NL", {
             hour:   '2-digit', 
             minute: '2-digit'
         });
+
+        // get offline history
+        result      = await chrome.storage.local.get(["history"]);
+
+        let history     = result.history;
 
         formData.append('username', username);
         formData.append('date', dateStr);
         formData.append('time', timeStr);
         formData.append('tabtimes', JSON.stringify(tabTimes));
 
-        result  = await request('update_history', formData);
+        result      = await request('update_history', formData);
 
         if(!result){
             if ( history == undefined ){
@@ -88,13 +105,6 @@ setInterval(async () => {
             }
 
             history[dateStr][timeStr] = tabTimes;
-
-            for (const [dateStr, times] of Object.entries(history)) {
-                console.log(`${dateStr}: ${times}`);
-                for (const [time, tabtimes] of Object.entries(times)) {
-                    console.log(`${time}: ${tabtimes}`);
-                }
-            }
             
             // store history locally
             await chrome.storage.local.set({'history': history });

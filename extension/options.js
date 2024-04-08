@@ -1,11 +1,15 @@
 // Saves options to chrome.storage
 const saveOptions = () => {
-    const name      = document.getElementById('name').value;
-    const server    = document.getElementById('server').value;
-    const warning   = document.getElementById('warning').value;
+    const name          = document.getElementById('name').value;
+    let serverAddress   = document.getElementById('server').value;
+    const warning       = document.getElementById('warning').value;
+
+    if(serverAddress[serverAddress.length-1] != '/'){
+      serverAddress += '/';
+    }
   
     chrome.storage.sync.set(
-      { name: name, server: server, warning:warning },
+      { name: name, server: serverAddress, warning:warning },
       () => {
         // Update status to let user know options were saved.
         const status        = document.getElementById('status');
