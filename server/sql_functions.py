@@ -34,7 +34,7 @@ class DB:
             self.create_db()
 
     def connect_db(self):
-        if not os.access(db_path, os.W_OK):
+        if os.path.isfile(db_path) and not os.access(db_path, os.W_OK):
             raise Exception("Database is not writable!")
         
         self.con    = sqlite3.connect(db_path)
@@ -45,14 +45,14 @@ class DB:
         
         try:
             self.connect_db()
+
+            script      = resource_path('setup.sql')
+
+            with open(script, 'r') as file:
+                logger.info(f'Loading script {script} into database.')
+                self.con.executescript(file.read())
         except:
             print('do I have permission to write to '+db_path+'?')
-            
-        script      = resource_path('setup.sql')
-
-        with open(script, 'r') as file:
-            logger.info(f'Loading script {script} into database.')
-            self.con.executescript(file.read())
             
         self.close_db()
 
