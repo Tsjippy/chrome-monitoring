@@ -179,6 +179,8 @@ def update_history():
     for url, spent in tabtimes.items():
         if url == 'undefined':
             continue
+        
+        url = url_strip(url)
 
         values  = f"'{user}', '{url}', '{dateStr}', '{timeStr}', {spent}"
         db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", values)
