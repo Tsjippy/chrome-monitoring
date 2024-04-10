@@ -12,7 +12,7 @@ def resource_path(relative_path=''):
 
     return os.path.join(base_path, relative_path)
     
-db_path 	= resource_path('websites_log.sqlite3')
+db_path 	= resource_path('db.sqlite3')
 
 class DB:
     def __init__(self, sql_script=None):
