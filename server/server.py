@@ -13,8 +13,13 @@ settings                    = ''
 def url_strip(url):
     if "http://" in url or "https://" in url:
         url = url.replace("https://", '').replace("http://", '').replace('\"', '')
+
     if "/" in url:
         url = url.split('/', 1)[0]
+
+    if url.count('.') > 1:
+        url = url.split('.', 1)[-1]
+
     return url
 
 @app.route('/', methods=['GET'])
