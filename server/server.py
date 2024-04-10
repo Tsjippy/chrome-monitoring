@@ -18,7 +18,8 @@ def url_strip(url):
         url = url.split('/', 1)[0]
 
     if url.count('.') > 1:
-        url = url.split('.', 1)[-1]
+        if not url.split('.', 1)[0].isdigit():
+            url = url.split('.', 1)[-1]
 
     return url
 
