@@ -176,12 +176,21 @@ def update_history():
     
     tabtimes    = json.loads(tabtimes)
     print(tabtimes)
+
+    # check if there are duplicate urls for which should total the times spent
+    totals      = {}
     for url, spent in tabtimes.items():
         if url == 'undefined':
             continue
         
         url = url_strip(url)
 
+        if url in totals:
+            totals[url] = totals[url] + int(spent)
+        else:
+            totals[url] = int(spent)
+
+    for url, spent in totals.items():
         values  = f"'{user}', '{url}', '{dateStr}', '{timeStr}', {spent}"
         db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", values)
         
