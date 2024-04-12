@@ -3,9 +3,9 @@
 ## [Unreleased] - yyyy-mm-dd
 
 ### Added
+- clean up local storage
 
 ### Changed
-- keep times in local storage
 
 ### Fixed
 
