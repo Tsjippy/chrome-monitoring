@@ -138,7 +138,7 @@ def history():
             except Exception as e:
                 print(e)
                 print(d)
-                year    = '2024'
+                year    = int(datetime.strptime(d, '%d-%m-%Y').strftime('%Y'))
             if not year in newData2[u]:
                 newData2[u][year]  = {}
 
