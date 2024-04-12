@@ -5,11 +5,11 @@
 ### Added
 
 ### Changed
-- remove url prefixes
 
 ### Fixed
 
 ### Updated
+- db creation issue
 
 ## [1.0.0] - 2020-06-15
 
