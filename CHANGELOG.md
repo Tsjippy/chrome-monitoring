@@ -3,13 +3,13 @@
 ## [Unreleased] - yyyy-mm-dd
 
 ### Added
-- calculate totals
 
 ### Changed
 
 ### Fixed
 
 ### Updated
+- extension going to inactive
 
 ## [1.0.0] - 2020-06-15
 
