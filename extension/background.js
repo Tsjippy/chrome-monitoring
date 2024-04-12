@@ -69,6 +69,31 @@ async function initialize(){
         await chrome.storage.sync.get(["limits"]).then((result) => {
             limits  = result.limits;
 
+            if(limits == undefined){
+                limits  = {};
+
+                chrome.notifications.create('serverurl', {
+                    title:              'Do you have the right server url?',
+                    message:            `I cannot reach your server at ${serverAddress} are you sure it is correct?<br>Change it <a href='${chrome.runtime.getURL('options.html')}'>here</a>`,
+                    iconUrl:            '/icon.png',
+                    type:               'basic',
+                    requireInteraction: true,
+                });
+            
+                chrome.notifications.onClicked.addListener(
+                    function(notificationId){
+                        if(notificationId == 'serverurl'){
+                            // redirect to options page if needed
+                            if (chrome.runtime.openOptionsPage) {
+                                chrome.runtime.openOptionsPage();
+                            } else {
+                                window.open(chrome.runtime.getURL('options.html'));
+                            }
+                        }
+                    },
+                );
+            }
+
             console.log('Limits fetched: '+JSON.stringify(limits));
         });
     }
@@ -126,7 +151,7 @@ setInterval(async () => {
             await chrome.storage.local.set({'history': history });
         }else{
             console.log('Uploading data succesfull');
-            
+
             if( history != undefined){
                 let succes  = true;
                 // Upload offline data
