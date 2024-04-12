@@ -3,7 +3,7 @@
 ## [Unreleased] - yyyy-mm-dd
 
 ### Added
-- show time in seconds
+- wrong server url warning
 
 ### Changed
 
