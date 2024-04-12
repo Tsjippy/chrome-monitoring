@@ -5,6 +5,7 @@
 ### Added
 
 ### Changed
+- keep times in local storage
 
 ### Fixed
 
