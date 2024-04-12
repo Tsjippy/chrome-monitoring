@@ -3,7 +3,7 @@
 ## [Unreleased] - yyyy-mm-dd
 
 ### Added
-- support for ip addresses
+- calculate totals
 
 ### Changed
 
