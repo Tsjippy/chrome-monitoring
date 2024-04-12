@@ -44,7 +44,7 @@
                                                                 {% for i in range(0, d['rows']) %}
                                                                     <tr>
                                                                         <td>{{ d['data'][i]['url'] }} </td>
-                                                                        <td>{{ d['data'][i]['time'] }} </td>
+                                                                        <td title="{{ d['data'][i]['seconds'] }} seconds">{{ d['data'][i]['time'] }} </td>
                                                                         <td>
                                                                             {% if limits[d['data'][i]['url']] %}
                                                                                 {{ limits[d['data'][i]['url']] }}

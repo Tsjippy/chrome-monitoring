@@ -80,7 +80,6 @@ initialize();
 setInterval(async () => {
     counter++;
 
-    console.log(counter);
     if((counter / 300 )  % 1 === 0 && username != ''){
 
         let formData    = new FormData();
@@ -125,36 +124,40 @@ setInterval(async () => {
             
             // store history locally
             await chrome.storage.local.set({'history': history });
-        }else if( history != undefined){
-            let succes  = true;
-            // Upload offline data
+        }else{
+            console.log('Uploading data succesfull');
+            
+            if( history != undefined){
+                let succes  = true;
+                // Upload offline data
 
-            // loop over all dates
-            for (const [dateStr, times] of Object.entries(history)) {
-                //loop over all times
-                for (const [time, tabtimes] of Object.entries(times)) {
-                    formData    = new FormData();
-                    formData.append('username', username);
-                    formData.append('date', dateStr);
-                    formData.append('time', time);
-                    formData.append('tabtimes', JSON.stringify(tabtimes));
+                // loop over all dates
+                for (const [dateStr, times] of Object.entries(history)) {
+                    //loop over all times
+                    for (const [time, tabtimes] of Object.entries(times)) {
+                        formData    = new FormData();
+                        formData.append('username', username);
+                        formData.append('date', dateStr);
+                        formData.append('time', time);
+                        formData.append('tabtimes', JSON.stringify(tabtimes));
 
-                    result  = await request('update_history', formData);
+                        result  = await request('update_history', formData);
 
-                    if(!result){
-                        succes = false;
+                        if(!result){
+                            succes = false;
+                            break;
+                        }
+                    }
+
+                    if(!succes){
                         break;
                     }
                 }
 
-                if(!succes){
-                    break;
+                // all data succesfully uploaded, remove from storage
+                if(succes){
+                    chrome.storage.local.remove(['history']);
                 }
-            }
-
-            // all data succesfully uploaded, remove from storage
-            if(succes){
-                chrome.storage.local.remove(['history']);
             }
         }
     }
@@ -186,6 +189,8 @@ setInterval(async () => {
         }
 
         tabTimes[activeTab.url]++;
+
+        console.log(`${activeTab.url}: ${tabTimes[activeTab.url]} seconds`)
 
         let limit   = limits[activeTab.url];
         if(limit == undefined){
