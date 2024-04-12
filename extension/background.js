@@ -6,6 +6,10 @@ let limits          = {};
 let serverAddress   = ''
 let username        = '';
 
+const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 20e3);
+chrome.runtime.onStartup.addListener(keepAlive);
+keepAlive();
+
 async function initialize(){
     // get extension settings from sync
     syncStorage     = await chrome.storage.sync.get();
@@ -76,6 +80,7 @@ initialize();
 setInterval(async () => {
     counter++;
 
+    console.log(counter);
     if((counter / 300 )  % 1 === 0 && username != ''){
 
         let formData    = new FormData();
@@ -232,6 +237,7 @@ setInterval(async () => {
             });
         }
     }
+    self.serviceWorker.postMessage('test')
 }, 1000);
 
 async function request(url, formData=''){
