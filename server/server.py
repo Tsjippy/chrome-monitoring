@@ -133,7 +133,12 @@ def history():
             
             total_time = total_time // 60 # convert to minutes
 
-            year    = int(datetime.strptime(d, '%Y-%m-%d').strftime('%Y'))
+            try:
+                year    = int(datetime.strptime(d, '%Y-%m-%d').strftime('%Y'))
+            except Exception as e:
+                print(e)
+                print(d)
+                year    = '2024'
             if not year in newData2[u]:
                 newData2[u][year]  = {}
 
