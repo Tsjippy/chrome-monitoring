@@ -6,9 +6,6 @@
     <br>
     We have the following users registered on this server:<br>
     {% for user in users%}
-        {{ user.user }}<br>
+        <a href="/history?user={{ user.user }}">{{ user.user|title }}</a><br>
     {% endfor %}
-    <br>
-    <br>
-    <a href="/history">Check the history here</a>
 {% endblock %}

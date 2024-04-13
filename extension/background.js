@@ -11,6 +11,13 @@ chrome.runtime.onStartup.addListener(keepAlive);
 keepAlive();
 
 async function initialize(){
+    chrome.notifications.create('startup', {
+        title:              'Starting Extension',
+        message:            `Starting the url monitoring extension`,
+        iconUrl:            '/icon.png',
+        type:               'basic',
+    });
+
     // get extension settings from sync
     syncStorage     = await chrome.storage.sync.get();
 
@@ -38,15 +45,13 @@ async function initialize(){
     let result      = await chrome.storage.local.get([dateStr]);
     if(result[dateStr] != undefined){
         tabTimes    = result[dateStr];
-
-        chrome.storage.local.remove([dateStr]);
     }
 
     // Clean up local storage
     result      = await chrome.storage.local.get();
 
     for (const [key, data] of Object.entries(result)) {
-        if( key == 'history'){
+        if( key == 'history' || key == dateStr){
             continue;
         }
         chrome.storage.local.remove([key]);
@@ -74,7 +79,7 @@ async function initialize(){
 
                 chrome.notifications.create('serverurl', {
                     title:              'Do you have the right server url?',
-                    message:            `I cannot reach your server at ${serverAddress} are you sure it is correct?<br>Change it <a href='${chrome.runtime.getURL('options.html')}'>here</a>`,
+                    message:            `I cannot reach your server at ${serverAddress} are you sure it is correct?<br>Change it by clicking on this message`,
                     iconUrl:            '/icon.png',
                     type:               'basic',
                     requireInteraction: true,
