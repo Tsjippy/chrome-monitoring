@@ -110,19 +110,19 @@ initialize();
 setInterval(async () => {
     counter++;
 
+    const d         = new Date();
+    let dateStr     = d.toLocaleDateString("fr-CA", {
+        year:   "numeric",
+        month:  "2-digit",
+        day:    "2-digit",
+    });
+
+    // store tabtimes locally to use when rebooting extension or chrome
+    chrome.storage.local.set({ [dateStr] : tabTimes });
+
     if((counter / 300 )  % 1 === 0 && username != ''){
 
         let formData    = new FormData();
-        const d         = new Date();
-
-        let dateStr     = d.toLocaleDateString("fr-CA", {
-            year:   "numeric",
-            month:  "2-digit",
-            day:    "2-digit",
-        });
-
-        // store tabtimes locally to use when rebooting extension or chrome
-        let result  = await chrome.storage.local.set({ [dateStr] : tabTimes });
 
         let timeStr     = d.toLocaleTimeString("nl-NL", {
             hour:   '2-digit', 
@@ -152,11 +152,12 @@ setInterval(async () => {
 
             history[dateStr][timeStr] = tabTimes;
             
-            // store history locally
+            // store history locally to upload it later
             await chrome.storage.local.set({'history': history });
         }else{
             console.log('Uploading data succesfull');
 
+            // upload previously stored data
             if( history != undefined){
                 let succes  = true;
                 // Upload offline data
