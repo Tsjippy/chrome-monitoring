@@ -4,6 +4,7 @@
 
 ### Added
 - wrong server url warning
+- favicon
 
 ### Changed
 
