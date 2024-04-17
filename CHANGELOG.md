@@ -7,6 +7,7 @@
 - favicon
 
 ### Changed
+- display time
 
 ### Fixed
 
