@@ -11,12 +11,14 @@ chrome.runtime.onStartup.addListener(keepAlive);
 keepAlive();
 
 async function initialize(){
-    chrome.notifications.create('startup', {
-        title:              'Starting Extension',
-        message:            `Starting the url monitoring extension`,
-        iconUrl:            '/icon.png',
-        type:               'basic',
+    chrome.notifications.create('', {
+        title:      'Starting Extension',
+        message:    `Starting the url monitoring extension`,
+        iconUrl:    '/icon.png',
+        type:       'basic'
     });
+
+    console.log('Notification send')
 
     // get extension settings from sync
     syncStorage     = await chrome.storage.sync.get();
@@ -64,14 +66,20 @@ async function initialize(){
     result          = await request(`get_limits`, formData);
 
     if(result ){
+        console.log(result)
+        
         limits  = result;
         // store for offline usage
         await chrome.storage.sync.set({'limits': limits });
+
+        let lim = await chrome.storage.sync.get(["limits"]);
+
+        console.log(lim)
     }else{
-        console.log('getting offline limits');
+        console.log('Getting offline limits');
 
         // use offline limits
-        await chrome.storage.sync.get(["limits"]).then((result) => {
+        chrome.storage.sync.get(["limits"]).then((result) => {
             limits  = result.limits;
 
             if(limits == undefined){
@@ -142,6 +150,7 @@ setInterval(async () => {
         result      = await request('update_history', formData);
 
         if(!result){
+            console.log('Storing data in local storage');
             if ( history == undefined ){
                 history = {};
             }
@@ -154,6 +163,7 @@ setInterval(async () => {
             
             // store history locally to upload it later
             await chrome.storage.local.set({'history': history });
+            chrome.storage.local.get().then(res=>console.log(res));
         }else{
             console.log('Uploading data succesfull');
 
@@ -176,8 +186,12 @@ setInterval(async () => {
 
                         if(!result){
                             succes = false;
+
+                            console.error(`Uploading data for ${dateStr} ${time} failed`);
                             break;
                         }
+
+                        console.log(`Uploaded data for ${dateStr} ${time} succesfully`);
                     }
 
                     if(!succes){
@@ -196,7 +210,7 @@ setInterval(async () => {
     let currentWindow   = await chrome.windows.getCurrent();
 
     // check if we are actually seeing the tab
-    if(!currentWindow.focused || !navigator.onLine){
+    if(!currentWindow.focused){
         return;
     }
     
@@ -220,6 +234,8 @@ setInterval(async () => {
         }
 
         tabTimes[activeTab.url]++;
+
+        console.log(activeTab);
 
         console.log(`${activeTab.url}: ${tabTimes[activeTab.url]} seconds`)
 
@@ -251,7 +267,6 @@ setInterval(async () => {
                 type:       'basic'
             });
         }
-
 
         // close the tab
         if(tabTimes[activeTab.url] / 60 > limit){

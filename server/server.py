@@ -32,7 +32,7 @@ def index():
 @app.route('/limits/', methods=['GET', 'POST'])
 def limits():
     if request.method == 'POST':
-        user    = request.form['user']
+        user    = request.form['user'].lower()
         limit   = int(request.form['limit'])
         url     = request.form['url']
 
@@ -69,7 +69,7 @@ def history():
     if request.method == 'POST':
         limit   = request.form['limit']
         url     = request.form['url']
-        user    = request.form['user']
+        user    = request.form['user'].lower()
 
         if int(limit) < 5:
             flash('Limit should be greater than 5 minutes')
@@ -78,7 +78,7 @@ def history():
             db.add_db_entry('Limits', "'user','url', 'limit'", values)
             flash('Limit saved succesfully', 'info')
     elif request.method == 'GET':
-        user = request.args.get('user')
+        user = request.args.get('user').lower()
 
     data        = db.get_db_data('SELECT * from History')
 
@@ -205,7 +205,7 @@ def update_history():
 def get_limits():
     global settings
     try:
-        user        = request.form['username']
+        user        = request.form['username'].lower()
     except Exception as e:
         print('exception!')
         print(e)
