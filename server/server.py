@@ -221,7 +221,7 @@ def seconds_to_time(seconds):
     if hour == 0 and minutes == "00":
         time = str(seconds) + ' (s)'
     elif hour == 0 :
-        time = str(minutes)
+        time = str(minutes) + ' (min)'
     else:
         time = f"{hour}:{minutes}"
 
