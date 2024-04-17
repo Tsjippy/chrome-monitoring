@@ -12,6 +12,7 @@
 
 ### Updated
 - issue with not keeping data
+- bug in getting limits
 
 ## [1.0.0] - 2020-06-15
 
