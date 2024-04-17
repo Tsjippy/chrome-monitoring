@@ -5,6 +5,7 @@
 ### Added
 - wrong server url warning
 - favicon
+- minutes label
 
 ### Changed
 - display time
