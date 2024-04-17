@@ -215,10 +215,10 @@ def seconds_to_time(seconds):
     minutes = seconds // 60
     seconds %= 60
     
-    if minutes < 10:
+    if hour != 0 and  minutes < 10:
         minutes = '0' + str(minutes)
 
-    if hour == 0 and minutes == "00":
+    if hour == 0 and minutes == 0:
         time = str(seconds) + ' (s)'
     elif hour == 0 :
         time = str(minutes) + ' (min)'
