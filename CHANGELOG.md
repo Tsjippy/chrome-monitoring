@@ -14,6 +14,7 @@
 - issue with not keeping data
 - bug in getting limits
 - bug in url parsing
+- added 0 to minutes if needed
 
 ## [1.0.0] - 2020-06-15
 
