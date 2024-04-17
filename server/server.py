@@ -99,16 +99,18 @@ def history():
         seconds    %= 3600
         minutes   = seconds // 60
         seconds    %= 60
-
+        
         if minutes < 10:
             minutes = '0' + str(minutes)
 
-        if hour == 0 and minutes == 0:
+        if hour == 0 and minutes == "00":
             spent = str(seconds) + ' (s)'
         elif hour == 0 :
             spent = str(minutes)
         else:
             spent = f"{hour}:{minutes}"
+
+            
         
         newData[d['user']][d['date']][d['time']].append({
             'url':      d['url'],
