@@ -114,6 +114,7 @@ setInterval(async () => {
     counter++;
 
     const d         = new Date();
+
     let dateStr     = d.toLocaleDateString("fr-CA", {
         year:   "numeric",
         month:  "2-digit",
@@ -149,63 +150,9 @@ setInterval(async () => {
     }
 
     if (activeTab) {
-        if (!tabTimes[activeTab.url]) {
-            tabTimes[activeTab.url] = 0;
-        }
-
-        tabTimes[activeTab.url]++;
-
-        console.log(`${activeTab.url}: ${tabTimes[activeTab.url]} seconds`)
-
-        let limit   = limits[activeTab.url];
-        if(limit == undefined){
-            limit   = limits['default'];
-        }
-
-        if(parseInt(tabTimes[activeTab.url]) / 60 == ( limit - warningTime) ){
-            console.log(activeTab)
-
-            await chrome.notifications.create('', {
-                title:      'Je schermtijd zit er bijna op',
-                message:    `De website ${activeTab.url} wordt over ${warningTime} minuten afgesloten`,
-                iconUrl:    '/icon.png',
-                type:       'basic'
-            });
-        }
-
-        let total   = 0;
-        Object.entries(tabTimes).forEach(s => total = total + parseInt(s));
-        if(total >= limits.total * 60){
-            total   = total / 3600;
-
-            await chrome.notifications.create('', {
-                title:      'Je schermtijd zit er op',
-                message:    `Je zit al ${total.toFixed(1)} uur achter je computer!`,
-                iconUrl:    '/icon.png',
-                type:       'basic'
-            });
-        }
-
-        // close the tab
-        if(tabTimes[activeTab.url] / 60 > limit){
-            console.log(`Closing the tab with url ${activeTab.url}`);
-            
-            await chrome.notifications.create('', {
-                title:      'Je schermtijd zit er op',
-                message:    `De website ${activeTab.url} wordt nu afgesloten. ${limit} minuten is genoeg!`,
-                iconUrl:    '/icon.png',
-                type:       'basic'
-            });
-
-            let tabs = await chrome.tabs.query({});
-            tabs.forEach(tab => {
-                if(tab.url != undefined && stripUrl(tab.url) == activeTab.url){
-                    console.log(tab.url);
-                    chrome.tabs.remove(tab.id);
-                }
-            });
-        }
+        enforceLimits();
     }
+    
     self.serviceWorker.postMessage('test')
 }, 1000);
 
@@ -252,6 +199,13 @@ async function request(url, formData=''){
 
 async function sendUsage(){
     let formData    = new FormData();
+    const d         = new Date();
+
+    let dateStr     = d.toLocaleDateString("fr-CA", {
+        year:   "numeric",
+        month:  "2-digit",
+        day:    "2-digit",
+    });
 
     let timeStr     = d.toLocaleTimeString("nl-NL", {
         hour:   '2-digit', 
@@ -324,6 +278,65 @@ async function sendUsage(){
                 chrome.storage.local.remove(['history']);
             }
         }
+    }
+}
+
+async function enforceLimits(){
+    if (!tabTimes[activeTab.url]) {
+        tabTimes[activeTab.url] = 0;
+    }
+
+    tabTimes[activeTab.url]++;
+
+    console.log(`${activeTab.url}: ${tabTimes[activeTab.url]} seconds`)
+
+    let limit   = limits[activeTab.url];
+    if(limit == undefined){
+        limit   = limits['default'];
+    }
+
+    if(parseInt(tabTimes[activeTab.url]) / 60 == ( limit - warningTime) ){
+        console.log(activeTab)
+
+        await chrome.notifications.create('', {
+            title:      'Je schermtijd zit er bijna op',
+            message:    `De website ${activeTab.url} wordt over ${warningTime} minuten afgesloten`,
+            iconUrl:    '/icon.png',
+            type:       'basic'
+        });
+    }
+
+    let total   = 0;
+    Object.entries(tabTimes).forEach(s => total = total + parseInt(s));
+    if(total >= limits.total * 60){
+        total   = total / 3600;
+
+        await chrome.notifications.create('', {
+            title:      'Je schermtijd zit er op',
+            message:    `Je zit al ${total.toFixed(1)} uur achter je computer!`,
+            iconUrl:    '/icon.png',
+            type:       'basic'
+        });
+    }
+
+    // close the tab
+    if(tabTimes[activeTab.url] / 60 > limit){
+        console.log(`Closing the tab with url ${activeTab.url}`);
+        
+        await chrome.notifications.create('', {
+            title:      'Je schermtijd zit er op',
+            message:    `De website ${activeTab.url} wordt nu afgesloten. ${limit} minuten is genoeg!`,
+            iconUrl:    '/icon.png',
+            type:       'basic'
+        });
+
+        let tabs = await chrome.tabs.query({});
+        tabs.forEach(tab => {
+            if(tab.url != undefined && stripUrl(tab.url) == activeTab.url){
+                console.log(tab);
+                chrome.tabs.remove(tab.id);
+            }
+        });
     }
 }
 
