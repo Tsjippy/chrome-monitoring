@@ -94,27 +94,11 @@ def history():
         if not d['time'] in newData[d['user']][d['date']]:
             newData[d['user']][d['date']][d['time']]  = []
 
-        seconds   = d['time_spent']
-        hour      = seconds // 3600
-        seconds    %= 3600
-        minutes   = seconds // 60
-        seconds    %= 60
-        
-        if minutes < 10:
-            minutes = '0' + str(minutes)
-
-        if hour == 0 and minutes == "00":
-            spent = str(seconds) + ' (s)'
-        elif hour == 0 :
-            spent = str(minutes)
-        else:
-            spent = f"{hour}:{minutes}"
-
-            
+        time   = seconds_to_time(d['time_spent'])
         
         newData[d['user']][d['date']][d['time']].append({
             'url':      d['url'],
-            'time':     spent, #show time in minutes
+            'time':     time, #show time in minutes
             'seconds':  d['time_spent']
         })
 
@@ -136,7 +120,7 @@ def history():
             for t in newData[u][d][latest_time]:
                 total_time = total_time + t['seconds']
             
-            total_time = total_time // 60 # convert to minutes
+            total_time = seconds_to_time(total_time)
 
             try:
                 year    = int(datetime.strptime(d, '%Y-%m-%d').strftime('%Y'))
@@ -224,6 +208,24 @@ def get_limits():
         newlimits[limit['url']] = limit['limit']
     
     return jsonify(newlimits)
+
+def seconds_to_time(seconds):
+    hour    = seconds // 3600
+    seconds %= 3600
+    minutes = seconds // 60
+    seconds %= 60
+    
+    if minutes < 10:
+        minutes = '0' + str(minutes)
+
+    if hour == 0 and minutes == "00":
+        time = str(seconds) + ' (s)'
+    elif hour == 0 :
+        time = str(minutes)
+    else:
+        time = f"{hour}:{minutes}"
+
+    return time
 
 settings      = db.get_db_data('SELECT * from Settings')
 
