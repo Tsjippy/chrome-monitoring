@@ -325,7 +325,7 @@ async function enforceLimits(){
         
         await chrome.notifications.create('', {
             title:      'Je schermtijd zit er op',
-            message:    `De website ${activeTab.url} wordt nu afgesloten. ${limit} minuten is genoeg!`,
+            message:    `De website ${activeTab.url} is afgesloten. ${limit} minuten is genoeg!`,
             iconUrl:    '/icon.png',
             type:       'basic'
         });
@@ -340,8 +340,12 @@ async function enforceLimits(){
     }
 }
 
-function stripUrl(url){
-    url = url.split( '/' )[2];
+function stripUrl(orgUrl){
+    url = orgUrl.split( '/' )[2];
+
+    if(url == undefined){
+        return orgUrl;
+    }
 
     if(url.split('.').length - 1 < 2){
         return url;
