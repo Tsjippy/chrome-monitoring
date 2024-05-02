@@ -19,6 +19,7 @@
 - added 0 to minutes if needed
 - 0 minutes
 - url bugs
+- get request
 
 ## [1.0.0] - 2020-06-15
 
