@@ -78,7 +78,11 @@ def history():
             db.add_db_entry('Limits', "'user','url', 'limit'", values)
             flash('Limit saved succesfully', 'info')
     elif request.method == 'GET':
-        user = request.form['user'].lower()
+        user = request.args.get("user")
+        if user is None:
+            print("Argument not provided")
+        else:
+            user    = user.lower()
 
     data        = db.get_db_data('SELECT * from History')
 
