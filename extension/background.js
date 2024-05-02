@@ -45,9 +45,12 @@ async function initialize(){
     });
 
     let result      = await chrome.storage.local.get([dateStr]);
+    
     if(result[dateStr] != undefined){
+        console.log(await chrome.storage.local.get());
         tabTimes    = result[dateStr];
     }
+    console.log(tabTimes);
 
     // Clean up local storage
     result      = await chrome.storage.local.get();
@@ -175,8 +178,8 @@ async function request(url, formData=''){
             }
         );
     }catch (error){
-        console.error(url);
-		console.error(error);
+        console.log(url);
+		console.log(error);
 		return false;
 	}
 
