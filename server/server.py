@@ -43,6 +43,7 @@ def limits():
 
     print(user)
     print(type(user))
+    print(len(user))
 
     if not limit:
         flash('A new limit is required')
