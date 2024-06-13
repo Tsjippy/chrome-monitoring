@@ -43,7 +43,7 @@ def limits():
 
     if not limit:
         flash('A new limit is required')
-    elif not user:
+    elif not user or user == 'None':
         flash('An user is required')
     elif not url:
         flash('An url is required')
