@@ -37,26 +37,18 @@ def index():
     
 @app.route('/limits/', methods=['GET', 'POST'])
 def limits():
-    user    = getVar(request,'user').lower()
+    user    = getVar(request,'user')
     limit   = int(getVar(request,'limit'))
     url     = getVar(request,'url')
 
-    print("user")
-    print(user)
-    print("type")
-    print(type(user))
-    print("type")
-    print(len(user))
-
     if not limit:
         flash('A new limit is required')
-    elif not user or user == 'None':
-        print("user")
-        print(user)
+    elif not user:
         flash('An user is required')
     elif not url:
         flash('An url is required')
     else:
+        user=user.lower()
         query   = f"UPDATE Limits SET 'limit' = {limit} WHERE user='{user}' AND url='{url}'"
         print(query)
         db.update_db_data(query)
@@ -215,6 +207,7 @@ def get_limits():
         user        = getVar(request,'username')
         if user == None:
             print(request.args)
+            flash('An user is required')
         else:
             user=user.lower()
     except Exception as e:
