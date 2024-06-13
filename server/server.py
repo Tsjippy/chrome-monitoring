@@ -206,8 +206,10 @@ def get_limits():
     try:
         user        = getVar(request,'username')
         if user == None:
-            print(request.args)
+            print("No user given")
             flash('An user is required')
+
+            return "Please select an user"
         else:
             user=user.lower()
     except Exception as e:
