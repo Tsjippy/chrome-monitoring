@@ -198,7 +198,11 @@ def update_history():
 def get_limits():
     global settings
     try:
-        user        = request.args.get('username').lower()
+        user        = request.args.get('username')
+        if user == None:
+            print(request.args)
+        else:
+            user=user.lower()
     except Exception as e:
         print('exception!')
         print(e)
