@@ -32,9 +32,9 @@ def index():
 @app.route('/limits/', methods=['GET', 'POST'])
 def limits():
     if request.method == 'POST':
-        user    = request.form['user'].lower()
-        limit   = int(request.form['limit'])
-        url     = request.form['url']
+        user    = request.args.get('user').lower()
+        limit   = int(request.args.get('limit'))
+        url     = request.args.get('url')
 
         if not limit:
             flash('A new limit is required')
@@ -67,9 +67,9 @@ def limits():
 @app.route('/history', methods=['GET', 'POST'])
 def history():
     if request.method == 'POST':
-        limit   = request.form['limit']
-        url     = request.form['url']
-        user    = request.form['user'].lower()
+        limit   = request.args.get('limit')
+        url     = request.args.get('url')
+        user    = request.args.get('user').lower()
 
         if int(limit) < 5:
             flash('Limit should be greater than 5 minutes')
@@ -157,10 +157,10 @@ def history():
 
 @app.route('/update_history', methods=['POST'])
 def update_history():
-    tabtimes    = request.form['tabtimes']
-    user        = request.form['username'].lower()
-    dateStr     = request.form['date']
-    timeStr     = request.form['time']
+    tabtimes    = request.args.get('tabtimes')
+    user        = request.args.get('username').lower()
+    dateStr     = request.args.get('date')
+    timeStr     = request.args.get('time')
 
     limitsSet   = db.get_db_data(f"SELECT * from Limits WHERE user='{user}'")
 
@@ -198,7 +198,7 @@ def update_history():
 def get_limits():
     global settings
     try:
-        user        = request.form['username'].lower()
+        user        = request.args.get('username').lower()
     except Exception as e:
         print('exception!')
         print(e)
