@@ -21,6 +21,7 @@
 - url bugs
 - get request
 - gettings query args
+- post and get params
 
 ## [1.0.0] - 2020-06-15
 
