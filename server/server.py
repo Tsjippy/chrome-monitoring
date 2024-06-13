@@ -23,18 +23,24 @@ def url_strip(url):
 
     return url
 
+def getVar(request, key):
+    if request.method == 'POST':
+        return request.form.get(key)
+    else:
+        return request.args.get(key) 
+
 @app.route('/', methods=['GET'])
 def index():
     users = db.get_db_data('SELECT DISTINCT user FROM History ORDER BY user')
 
     return render_template('index.html', users=users)
-
+    
 @app.route('/limits/', methods=['GET', 'POST'])
 def limits():
     if request.method == 'POST':
-        user    = request.args.get('user').lower()
-        limit   = int(request.args.get('limit'))
-        url     = request.args.get('url')
+        user    = getVar(request,'user').lower()
+        limit   = int(getVar(request,'limit'))
+        url     = getVar(request,'url')
 
         if not limit:
             flash('A new limit is required')
@@ -67,9 +73,9 @@ def limits():
 @app.route('/history', methods=['GET', 'POST'])
 def history():
     if request.method == 'POST':
-        limit   = request.args.get('limit')
-        url     = request.args.get('url')
-        user    = request.args.get('user').lower()
+        limit   = getVar(request,'limit')
+        url     = getVar(request,'url')
+        user    = getVar(request,'user').lower()
 
         if int(limit) < 5:
             flash('Limit should be greater than 5 minutes')
@@ -78,7 +84,7 @@ def history():
             db.add_db_entry('Limits', "'user','url', 'limit'", values)
             flash('Limit saved succesfully', 'info')
     elif request.method == 'GET':
-        user = request.args.get("user")
+        user = getVar(request,"user")
         if user is None:
             print("Argument not provided")
         else:
@@ -157,10 +163,10 @@ def history():
 
 @app.route('/update_history', methods=['POST'])
 def update_history():
-    tabtimes    = request.args.get('tabtimes')
-    user        = request.args.get('username').lower()
-    dateStr     = request.args.get('date')
-    timeStr     = request.args.get('time')
+    tabtimes    = getVar(request,'tabtimes')
+    user        = getVar(request,'username').lower()
+    dateStr     = getVar(request,'date')
+    timeStr     = getVar(request,'time')
 
     limitsSet   = db.get_db_data(f"SELECT * from Limits WHERE user='{user}'")
 
@@ -198,7 +204,7 @@ def update_history():
 def get_limits():
     global settings
     try:
-        user        = request.args.get('username')
+        user        = getVar(request,'username')
         if user == None:
             print(request.args)
         else:
