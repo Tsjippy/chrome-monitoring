@@ -41,13 +41,17 @@ def limits():
     limit   = int(getVar(request,'limit'))
     url     = getVar(request,'url')
 
+    print("user")
     print(user)
+    print("type")
     print(type(user))
+    print("type")
     print(len(user))
 
     if not limit:
         flash('A new limit is required')
     elif not user or user == 'None':
+        print("user")
         print(user)
         flash('An user is required')
     elif not url:
