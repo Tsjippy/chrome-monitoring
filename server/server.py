@@ -202,6 +202,7 @@ def get_limits():
     except Exception as e:
         print('exception!')
         print(e)
+        return
 
     limits      = db.get_db_data(f"SELECT * from Limits WHERE user='{user}'")
 

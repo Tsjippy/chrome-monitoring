@@ -178,7 +178,7 @@ async function request(url, formData=''){
             }
         );
     }catch (error){
-        console.log(url);
+        console.log(serverAddress+url);
 		console.log(error);
 		return false;
 	}
