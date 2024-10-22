@@ -200,7 +200,10 @@ def update_history():
         values  = f"'{user}', '{url}', '{dateStr}', '{timeStr}', {spent}"
         db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", values)
         
-    return jsonify({'message': 'success!'})
+    return jsonify({
+        'message': 'success!',
+        'limits':   limitsSet
+    })
 
 @app.route('/get_limits', methods=['POST', "GET"])
 def get_limits():
