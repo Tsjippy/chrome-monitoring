@@ -231,7 +231,7 @@ def update_history():
         
     return jsonify({
         'message': 'success!',
-        'limits':   limitsSet
+        'limits':   get_limits(False)
     })
 
 @app.route('/get_limits', methods=['POST', "GET"])
