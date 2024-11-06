@@ -73,11 +73,22 @@ def limits():
             flash('Limit saved succesfully', 'info')
     
     limits      = db.get_db_data(f"SELECT * from Limits")
-    newLimits  = {}
+
+    new_limits  = {}
+    unique_urls = {}
 
     for limit in limits:
-        if not limit['user'] in newLimits:
-            newLimits[limit['user']]  = []
+        if not limit['user'] in unique_urls:
+            unique_urls[limit['user']]  = []
+            
+        if not limit['user'] in new_limits:
+            new_limits[limit['user']]  = []
+
+        # Skip duplicates
+        if limit['url'] in unique_urls[limit['user']]:
+            continue
+
+        unique_urls[limit['user']].append(limit['url'])
 
         date_string = ''
         temp_limit  = None
@@ -90,16 +101,16 @@ def limits():
                 temp_limit  = limit['temp_limit']
                 date_string = limit['till']
 
-        newLimits[limit['user']].append({
+        new_limits[limit['user']].append({
             'url':          limit['url'],
             'limit':        limit['limit'], #show time in minutes
             'till':         date_string,
             'temp_limit':   temp_limit
         })
     
-    print(newLimits)
+    print(new_limits)
 
-    return render_template('limits.html', limits=newLimits, usercount=len(newLimits))
+    return render_template('limits.html', limits=new_limits, usercount=len(new_limits))
 
 @app.route('/history', methods=['GET', 'POST'])
 def history():
