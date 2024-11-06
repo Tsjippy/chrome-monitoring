@@ -252,7 +252,11 @@ async function sendUsage(){
 
         limits  = result.limits
 
-        // upload previously stored data
+        console.log(result.limits);
+
+        limits = result.limits;
+	    
+	// upload previously stored data
         if( history != undefined){
             let succes  = true;
 
