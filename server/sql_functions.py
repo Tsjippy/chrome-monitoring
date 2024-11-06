@@ -1,5 +1,3 @@
-from doctest import script_from_examples
-from optparse import Values
 import sqlite3
 import os
 import logging

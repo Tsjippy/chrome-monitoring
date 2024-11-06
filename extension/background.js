@@ -10,6 +10,55 @@ const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 20e3);
 chrome.runtime.onStartup.addListener(keepAlive);
 keepAlive();
 
+async function getLimits(){
+    // get website limits from the server
+    let formData    = new FormData();
+    formData.append('username', username)
+
+    result          = await request(`get_limits`, formData);
+
+    if(result ){
+        limits  = result;
+        
+        // store for offline usage
+        await chrome.storage.sync.set({'limits': limits });
+    }else{
+        console.log('Getting offline limits');
+
+        // use offline limits
+        chrome.storage.sync.get(["limits"]).then((result) => {
+            limits  = result.limits;
+
+            if(limits == undefined){
+                limits  = {};
+
+                chrome.notifications.create('serverurl', {
+                    title:              'Do you have the right server url?',
+                    message:            `I cannot reach your server at ${serverAddress} are you sure it is correct?<br>Change it by clicking on this message`,
+                    iconUrl:            '/icon.png',
+                    type:               'basic',
+                    requireInteraction: true,
+                });
+            
+                chrome.notifications.onClicked.addListener(
+                    function(notificationId){
+                        if(notificationId == 'serverurl'){
+                            // redirect to options page if needed
+                            if (chrome.runtime.openOptionsPage) {
+                                chrome.runtime.openOptionsPage();
+                            } else {
+                                window.open(chrome.runtime.getURL('options.html'));
+                            }
+                        }
+                    },
+                );
+            }
+
+            console.log('Limits fetched: '+JSON.stringify(limits));
+        });
+    }
+}
+
 async function initialize(){
     chrome.notifications.create('', {
         title:      'Starting Extension',
@@ -62,52 +111,7 @@ async function initialize(){
         chrome.storage.local.remove([key]);
     }
 
-    // get website limits from the server
-    let formData    = new FormData();
-    formData.append('username', username)
-
-    result          = await request(`get_limits`, formData);
-
-    if(result ){
-        limits  = result;
-        
-        // store for offline usage
-        await chrome.storage.sync.set({'limits': limits });
-    }else{
-        console.log('Getting offline limits');
-
-        // use offline limits
-        chrome.storage.sync.get(["limits"]).then((result) => {
-            limits  = result.limits;
-
-            if(limits == undefined){
-                limits  = {};
-
-                chrome.notifications.create('serverurl', {
-                    title:              'Do you have the right server url?',
-                    message:            `I cannot reach your server at ${serverAddress} are you sure it is correct?<br>Change it by clicking on this message`,
-                    iconUrl:            '/icon.png',
-                    type:               'basic',
-                    requireInteraction: true,
-                });
-            
-                chrome.notifications.onClicked.addListener(
-                    function(notificationId){
-                        if(notificationId == 'serverurl'){
-                            // redirect to options page if needed
-                            if (chrome.runtime.openOptionsPage) {
-                                chrome.runtime.openOptionsPage();
-                            } else {
-                                window.open(chrome.runtime.getURL('options.html'));
-                            }
-                        }
-                    },
-                );
-            }
-
-            console.log('Limits fetched: '+JSON.stringify(limits));
-        });
-    }
+    getLimits();
 }
 
 initialize();
@@ -243,7 +247,10 @@ async function sendUsage(){
         await chrome.storage.local.set({'history': history });
         chrome.storage.local.get().then(res=>console.log(res));
     }else{
-        console.log('Uploading data succesfull');
+        console.log(result);
+        console.log(result.message);
+
+        limits  = result.limits
 
         // upload previously stored data
         if( history != undefined){
@@ -292,6 +299,9 @@ async function enforceLimits(){
     tabTimes[activeTab.url]++;
 
     console.log(`${activeTab.url}: ${tabTimes[activeTab.url]} seconds`)
+
+    // Make sure we have the most up to date limits
+    await getLimits();
 
     let limit   = limits[activeTab.url];
     if(limit == undefined){

@@ -1,8 +1,6 @@
-from flask import Flask, jsonify, request, render_template, url_for, flash, redirect, json
-import time
+from flask import Flask, jsonify, request, render_template, flash, json
 import sql_functions
-from datetime import datetime, date
-import time
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY']    = '1hhyjufosaip9fcids09if09ds8vuodsijfdious0d9f'
@@ -38,9 +36,11 @@ def index():
 @app.route('/limits/', methods=['GET', 'POST'])
 def limits():
     if request.method == 'POST':
-        user    = getVar(request,'user')
-        limit   = getVar(request,'limit')
-        url     = getVar(request,'url')
+        user        = getVar(request, 'user')
+        limit       = getVar(request, 'limit')
+        url         = getVar(request, 'url')
+        till        = getVar(request, 'till')
+        temp_limit  = getVar(request, 'temp_limit')
 
         if not limit:
             flash('A new limit is required')
@@ -51,9 +51,25 @@ def limits():
         else:
             user    = user.lower()
             limit   = int(limit)
+
+            # Update the temporary limit
+            if till:
+                temp_limit   = int(temp_limit)
+
+                # Store the end date and time
+                query   = f"UPDATE Limits SET 'till' = '{till}' WHERE user='{user}' AND url='{url}'"
+                db.update_db_data(query)
+
+                # Store the temp limit
+                query   = f"UPDATE Limits SET 'temp_limit' = {temp_limit} WHERE user='{user}' AND url='{url}'"
+                db.update_db_data(query)
+            
+            # Up date the normal limit
             query   = f"UPDATE Limits SET 'limit' = {limit} WHERE user='{user}' AND url='{url}'"
+
             print(query)
             db.update_db_data(query)
+
             flash('Limit saved succesfully', 'info')
     
     limits      = db.get_db_data(f"SELECT * from Limits")
@@ -63,9 +79,22 @@ def limits():
         if not limit['user'] in newLimits:
             newLimits[limit['user']]  = []
 
+        date_string = ''
+        temp_limit  = None
+        if limit['till'] != None:
+            x           = datetime.strptime(limit['till'], '%Y-%m-%dT%H:%M')
+
+            # check if the date is in the future
+            if datetime.now() < x:           
+                date_string = x.strftime('%d-%m-%Y %H:%M')
+                temp_limit  = limit['temp_limit']
+                date_string = limit['till']
+
         newLimits[limit['user']].append({
-            'url':      limit['url'],
-            'limit':    limit['limit'], #show time in minutes
+            'url':          limit['url'],
+            'limit':        limit['limit'], #show time in minutes
+            'till':         date_string,
+            'temp_limit':   temp_limit
         })
     
     print(newLimits)
@@ -200,10 +229,15 @@ def update_history():
         values  = f"'{user}', '{url}', '{dateStr}', '{timeStr}', {spent}"
         db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", values)
         
-    return jsonify({'message': 'success!'})
+    return jsonify(
+        {
+            'message': 'success!',
+            'limits': get_limits(False)
+        }
+    )
 
 @app.route('/get_limits', methods=['POST', "GET"])
-def get_limits():
+def get_limits(json=True):
     global settings
     try:
         user        = getVar(request,'username')
@@ -223,9 +257,22 @@ def get_limits():
 
     newlimits   = {}
     for limit in limits:
-        newlimits[limit['url']] = limit['limit']
+        minutes = limit['limit']
+
+        # Send the temporary limit
+        if limit['till'] != None and limit['temp_limit'] != None:
+            x           = datetime.strptime(limit['till'], '%Y-%m-%dT%H:%M')
+
+            # check if the date is in the future
+            if datetime.now() < x:           
+                minutes = limit['temp_limit']            
+
+        newlimits[limit['url']] = minutes
     
-    return jsonify(newlimits)
+    if json:
+        return jsonify(newlimits)
+    
+    return newlimits
 
 def seconds_to_time(seconds):
     hour    = seconds // 3600

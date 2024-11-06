@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %} Webpage Limits {% endblock %}
+{% block content %}
+    <div id="limits">
+        {% if limits %} 
+            {% for user in limits %}
+                <button type="button" class="user-choice" data-user="{{ user }}">{{ user|title }}</button>
+                <div class="user-wrapper hidden" data-user="{{ user }}">
+                    <table class="table table-striped table-hover table-sm">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>URL</th>
+                                <th>Limit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for limit in limits[user] %}
+                                <tr>
+                                    <td>{{ limit['url'] }}</td>
+                                    <td>
+                                        <form method="post">
+                                            <input type="hidden" name="url" value="{{ limit['url'] }}">
+                                            <input type="hidden" name="user" value="{{ user }}">
+
+                                            <input type="number" class="limit" name="limit" value="{{ limit['limit'] }}">
+
+                                            <button type="submit" class="btn btn-primary">Change</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endfor %}
+        {% else %} 
+            No limits defined yet, define them on the <a href="/history">history page</a>
+        {% endif %}
+    </div>
+{% endblock %}

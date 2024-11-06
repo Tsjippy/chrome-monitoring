@@ -1,6 +1,6 @@
 console.log('main.js loaded');
 
-document.addEventListener('click', (ev) =>{
+document.addEventListener('click', async (ev) =>{
     let target  = ev.target;
 
     if(target.matches('.alert')){
@@ -14,11 +14,35 @@ document.addEventListener('click', (ev) =>{
             target.closest('tr').nextElementSibling.classList.add('hidden');
         }
     }else if(target.dataset.year != undefined){
-        document.querySelector(`div[data-year="${target.dataset.year}"]`).classList.toggle('hidden');
+        document.querySelectorAll(`div[data-year="${target.dataset.year}"]`).forEach(el=>el.classList.toggle('hidden'));
     }else if(target.dataset.month != undefined){
-        document.querySelector(`div[data-month="${target.dataset.month}"]`).classList.toggle('hidden');
+        document.querySelectorAll(`div[data-month="${target.dataset.month}"]`).forEach(el=>el.classList.toggle('hidden'));
     }else if(target.dataset.user != undefined){
-        document.querySelector(`div[data-user="${target.dataset.user}"]`).classList.toggle('hidden');
+        document.querySelectorAll(`div[data-user="${target.dataset.user}"]`).forEach(el=>el.classList.toggle('hidden'));
+    }else if(target.type == 'submit'){
+        let row = target.closest('tr')
+
+        let formData    = new FormData()
+
+        row.querySelectorAll('input').forEach(input => formData.append(input.name, input.value));
+
+        const response = await fetch("",
+        {
+            body: formData,
+            method: "post"
+        });
+
+        const html  = await response.text();
+
+        // Show the updated users limits again
+        let shownUsers  = [];
+        document.querySelectorAll('.user-wrapper:not(.hidden)').forEach(el=>shownUsers.push(el.dataset.user))
+
+        document.querySelector("html").innerHTML = html;
+
+        shownUsers.forEach(user => {
+            document.querySelector(`.user-wrapper[data-user='${user}']`).classList.remove('hidden');
+        });
     }
 })
 

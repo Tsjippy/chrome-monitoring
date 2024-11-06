@@ -12,21 +12,30 @@
                             <tr>
                                 <th>URL</th>
                                 <th>Limit</th>
+                                <th>Temp Limit</th>
+                                <th>Till</th>
+                                <th>Submit</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for limit in limits[user] %}
                                 <tr>
-                                    <td>{{ limit['url'] }}</td>
+                                    <input type="hidden" name="url" value="{{ limit['url'] }}">
+                                    <input type="hidden" name="user" value="{{ user }}">
                                     <td>
-                                        <form method="post">
-                                            <input type="hidden" name="url" value="{{ limit['url'] }}">
-                                            <input type="hidden" name="user" value="{{ user }}">
-
-                                            <input type="number" class="limit" name="limit" value="{{ limit['limit'] }}">
-
-                                            <button type="submit" class="btn btn-primary">Change</button>
-                                        </form>
+                                        {{ limit['url'] }}
+                                    </td>
+                                    <td>
+                                        <input type="number" class="limit" name="limit" value="{{ limit['limit'] }}">                                            
+                                    </td>
+                                    <td>
+                                        <input type="number" class="limit" name="temp_limit" value="{{ limit['temp_limit'] }}">
+                                    </td>
+                                    <td>
+                                        <input type="datetime-local" name="till" value="{{ limit['till'] }}">
+                                    </td>
+                                    <td>
+                                        <button type="submit" class="btn btn-primary">Change</button>
                                     </td>
                                 </tr>
                             {% endfor %}
