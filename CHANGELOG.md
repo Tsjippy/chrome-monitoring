@@ -23,6 +23,7 @@
 - get request
 - gettings query args
 - post and get params
+- error
 
 ## [1.0.0] - 2020-06-15
 
