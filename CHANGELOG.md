@@ -6,6 +6,7 @@
 - wrong server url warning
 - favicon
 - minutes label
+- temperary limits
 
 ### Changed
 - display time
