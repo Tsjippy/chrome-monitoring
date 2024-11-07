@@ -1,13 +1,15 @@
 from flask import Flask, jsonify, request, render_template, flash, json
 import sql_functions
 from datetime import datetime
+import mqtt_to_ha
 
 app = Flask(__name__)
 app.config['SECRET_KEY']    = '1hhyjufosaip9fcids09if09ds8vuodsijfdious0d9f'
 db                          = sql_functions.DB()
 flask_port                  = 9000
-settings                    = ''
+settings                    = db.get_db_data('SELECT * from Settings')
 page_password               = 'moeilijk'
+users_ha                    = {}
 
 def url_strip(url):
     if "http://" in url or "https://" in url:
@@ -252,8 +254,14 @@ def update_history():
             totals[url] = int(spent)
 
     for url, spent in totals.items():
+        if url == '':
+            continue
+
         values  = f"'{user}', '{url}', '{dateStr}', '{timeStr}', {spent}"
         db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", values)
+
+        # Send to HA
+        update_ha_sensors(user, url, spent)
         
     return jsonify({
         'message': 'success!',
@@ -316,6 +324,49 @@ def seconds_to_time(seconds):
 
     return time
 
-settings      = db.get_db_data('SELECT * from Settings')
+def setup_ha_devices(user):
+    # Create user if it does not exist
+    if not user in users_ha:
+        users_ha[user]  = {}
+
+        # Device
+        users_ha[user]['device']   = {
+            "identifiers": [
+                f"chrome_monitoring_{user}"
+            ],
+            "name": "Chrome Monitoring",
+            "model": "1",
+            "manufacturer": "Ewald Harmsen"
+        }
+
+        #To Ha Instance
+        users_ha[user]['mqtt_to_ha']   = mqtt_to_ha.MqqtToHa(users_ha[user]['device'])
+
+def create_ha_sensor(user, url):
+    # Create device if needed
+    setup_ha_devices(user)
+
+    index   = url.replace('.', '_').replace(':', '__')
+
+    # Only create if needed
+    if not index in users_ha[user]['mqtt_to_ha'].sensors:
+        users_ha[user]['mqtt_to_ha'].sensors[index] = {
+            "name":     url,
+            "state":    "TOTAL_INCREASING",
+            "unit":     "min",
+            "type":     "DURATION"
+        }
+        
+        users_ha[user]['mqtt_to_ha'].create_sensors( { index: users_ha[user]['mqtt_to_ha'].sensors[index]} )
+    
+    sensor  = users_ha[user]['sensors'][index]
+
+    return sensor
+
+def update_ha_sensors(user, url, time):
+    # Create sensor if needed
+    sensor  = create_ha_sensor(user, url)
+
+    users_ha[user]['mqtt_to_ha'].send_value(sensor, time)
 
 app.run(host='0.0.0.0', port=flask_port)
