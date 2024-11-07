@@ -3,48 +3,58 @@
 {% block title %} Webpage Limits {% endblock %}
 {% block content %}
     <div id="limits">
-        {% if limits %} 
-            {% for user in limits %}
-                <button type="button" class="user-choice" data-user="{{ user }}">{{ user|title }}</button>
-                <div class="user-wrapper hidden" data-user="{{ user }}">
-                    <table class="table table-striped table-hover table-sm">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>URL</th>
-                                <th>Limit</th>
-                                <th>Temp Limit</th>
-                                <th>Till</th>
-                                <th>Submit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for limit in limits[user] %}
+        {% if authenticated %} 
+            {% if limits %} 
+                {% for user in limits %}
+                    <button type="button" class="user-choice" data-user="{{ user }}">{{ user|title }}</button>
+                    <div class="user-wrapper hidden" data-user="{{ user }}">
+                        <table class="table table-striped table-hover table-sm">
+                            <thead class="thead-light">
                                 <tr>
-                                    <input type="hidden" name="url" value="{{ limit['url'] }}">
-                                    <input type="hidden" name="user" value="{{ user }}">
-                                    <td>
-                                        {{ limit['url'] }}
-                                    </td>
-                                    <td>
-                                        <input type="number" class="limit" name="limit" value="{{ limit['limit'] }}">                                            
-                                    </td>
-                                    <td>
-                                        <input type="number" class="limit" name="temp_limit" value="{{ limit['temp_limit'] }}">
-                                    </td>
-                                    <td>
-                                        <input type="datetime-local" name="till" value="{{ limit['till'] }}">
-                                    </td>
-                                    <td>
-                                        <button type="submit" class="btn btn-primary">Change</button>
-                                    </td>
+                                    <th>URL</th>
+                                    <th>Limit</th>
+                                    <th>Temp Limit</th>
+                                    <th>Till</th>
+                                    <th>Submit</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% endfor %}
+                            </thead>
+                            <tbody>
+                                {% for limit in limits[user] %}
+                                    <tr>
+                                        <input type="hidden" name="url" value="{{ limit['url'] }}">
+                                        <input type="hidden" name="user" value="{{ user }}">
+                                        <input type="hidden" name="password" value="{{ password }}">
+                                        <td>
+                                            {{ limit['url'] }}
+                                        </td>
+                                        <td>
+                                            <input type="number" class="limit" name="limit" value="{{ limit['limit'] }}">                                            
+                                        </td>
+                                        <td>
+                                            <input type="number" class="limit" name="temp_limit" value="{{ limit['temp_limit'] }}">
+                                        </td>
+                                        <td>
+                                            <input type="datetime-local" name="till" value="{{ limit['till'] }}">
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-primary">Change</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
+            {% else %} 
+                No limits defined yet, define them on the <a href="/history">history page</a>
+            {% endif %}
         {% else %} 
-            No limits defined yet, define them on the <a href="/history">history page</a>
+            Please  give the password for this page
+            <form method="post">
+                <input type="password" name="password">
+
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
         {% endif %}
     </div>
 {% endblock %}

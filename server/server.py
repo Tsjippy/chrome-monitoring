@@ -7,6 +7,7 @@ app.config['SECRET_KEY']    = '1hhyjufosaip9fcids09if09ds8vuodsijfdious0d9f'
 db                          = sql_functions.DB()
 flask_port                  = 9000
 settings                    = ''
+page_password               = 'moeilijk'
 
 def url_strip(url):
     if "http://" in url or "https://" in url:
@@ -35,82 +36,96 @@ def index():
     
 @app.route('/limits/', methods=['GET', 'POST'])
 def limits():
+    pwd             = None
+    new_limits      = {}
+    authenticated   = False
+
     if request.method == 'POST':
-        user        = getVar(request, 'user')
-        limit       = getVar(request, 'limit')
-        url         = getVar(request, 'url')
-        till        = getVar(request, 'till')
-        temp_limit  = getVar(request, 'temp_limit')
+        password    = getVar(request, 'password')
 
-        if not limit:
-            flash('A new limit is required')
-        elif not user:
-            flash('An user is required')
-        elif not url:
-            flash('An url is required')
+        if(password == page_password):
+            pwd             = page_password
+            authenticated   = True
+
+            limit       = getVar(request, 'limit')
+
+            if limit:
+                url         = getVar(request, 'url')
+                till        = getVar(request, 'till')
+                temp_limit  = getVar(request, 'temp_limit')
+                user        = getVar(request, 'user')
+                if not user:
+                    flash('An user is required', 'error')
+                elif not url:
+                    flash('An url is required', 'error')
+                else:
+                    user    = user.lower()
+                    limit   = int(limit)
+
+                    # Update the temporary limit
+                    if till:
+                        temp_limit   = int(temp_limit)
+
+                        # Store the end date and time
+                        query   = f"UPDATE Limits SET 'till' = '{till}' WHERE user='{user}' AND url='{url}'"
+                        db.update_db_data(query)
+
+                        # Store the temp limit
+                        query   = f"UPDATE Limits SET 'temp_limit' = {temp_limit} WHERE user='{user}' AND url='{url}'"
+                        db.update_db_data(query)
+                    
+                    # Up date the normal limit
+                    query   = f"UPDATE Limits SET 'limit' = {limit} WHERE user='{user}' AND url='{url}'"
+
+                    print(query)
+                    db.update_db_data(query)
+
+                    flash('Limit saved succesfully', 'success')
+            else:
+                flash('Succesfully logged in', 'success')
         else:
-            user    = user.lower()
-            limit   = int(limit)
+            flash('Invalid Password', 'danger')
 
-            # Update the temporary limit
-            if till:
-                temp_limit   = int(temp_limit)
+    if pwd != None:
+        limits      = db.get_db_data(f"SELECT * from Limits")
 
-                # Store the end date and time
-                query   = f"UPDATE Limits SET 'till' = '{till}' WHERE user='{user}' AND url='{url}'"
-                db.update_db_data(query)
+        new_limits  = {}
+        unique_urls = {}
 
-                # Store the temp limit
-                query   = f"UPDATE Limits SET 'temp_limit' = {temp_limit} WHERE user='{user}' AND url='{url}'"
-                db.update_db_data(query)
-            
-            # Up date the normal limit
-            query   = f"UPDATE Limits SET 'limit' = {limit} WHERE user='{user}' AND url='{url}'"
+        for limit in limits:
+            if not limit['user'] in unique_urls:
+                unique_urls[limit['user']]  = []
+                
+            if not limit['user'] in new_limits:
+                new_limits[limit['user']]  = []
 
-            print(query)
-            db.update_db_data(query)
+            # Skip duplicates
+            if limit['url'] in unique_urls[limit['user']]:
+                continue
 
-            flash('Limit saved succesfully', 'info')
-    
-    limits      = db.get_db_data(f"SELECT * from Limits")
+            unique_urls[limit['user']].append(limit['url'])
 
-    new_limits  = {}
-    unique_urls = {}
+            date_string = ''
+            temp_limit  = None
+            if limit['till'] != None:
+                x           = datetime.strptime(limit['till'], '%Y-%m-%dT%H:%M')
 
-    for limit in limits:
-        if not limit['user'] in unique_urls:
-            unique_urls[limit['user']]  = []
-            
-        if not limit['user'] in new_limits:
-            new_limits[limit['user']]  = []
+                # check if the date is in the future
+                if datetime.now() < x:           
+                    date_string = x.strftime('%d-%m-%Y %H:%M')
+                    temp_limit  = limit['temp_limit']
+                    date_string = limit['till']
 
-        # Skip duplicates
-        if limit['url'] in unique_urls[limit['user']]:
-            continue
+            new_limits[limit['user']].append({
+                'url':          limit['url'],
+                'limit':        limit['limit'], #show time in minutes
+                'till':         date_string,
+                'temp_limit':   temp_limit
+            })
+        
+        print(new_limits)
 
-        unique_urls[limit['user']].append(limit['url'])
-
-        date_string = ''
-        temp_limit  = None
-        if limit['till'] != None:
-            x           = datetime.strptime(limit['till'], '%Y-%m-%dT%H:%M')
-
-            # check if the date is in the future
-            if datetime.now() < x:           
-                date_string = x.strftime('%d-%m-%Y %H:%M')
-                temp_limit  = limit['temp_limit']
-                date_string = limit['till']
-
-        new_limits[limit['user']].append({
-            'url':          limit['url'],
-            'limit':        limit['limit'], #show time in minutes
-            'till':         date_string,
-            'temp_limit':   temp_limit
-        })
-    
-    print(new_limits)
-
-    return render_template('limits.html', limits=new_limits, usercount=len(new_limits))
+    return render_template('limits.html', limits=new_limits, usercount=len(new_limits), authenticated=authenticated, password=pwd)
 
 @app.route('/history', methods=['GET', 'POST'])
 def history():
@@ -120,11 +135,11 @@ def history():
         user    = getVar(request,'user').lower()
 
         if int(limit) < 5:
-            flash('Limit should be greater than 5 minutes')
+            flash('Limit should be greater than 5 minutes', 'info')
         else:
             values   = f"'{user}', '{url}', {limit}"
             db.add_db_entry('Limits', "'user','url', 'limit'", values)
-            flash('Limit saved succesfully', 'info')
+            flash('Limit saved succesfully', 'success')
     elif request.method == 'GET':
         user = getVar(request,"user")
         if user is None:
@@ -252,7 +267,7 @@ def get_limits(json=True):
         user        = getVar(request,'username')
         if user == None:
             print("No user given")
-            flash('An user is required')
+            flash('An user is required', 'error')
 
             return "Please select an user"
         else:
