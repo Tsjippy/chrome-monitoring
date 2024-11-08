@@ -103,12 +103,16 @@ class MqqtToHa:
         del self.sent[mid]
 
     # Sends a sensor value
-    def send_value(self, sensor, value):
+    def send_value(self, sensor, value, use_json=True):
         if not 'base_topic' in sensor:
             return 
         
         topic                   = sensor['base_topic'] + "/state"
-        payload                 = json.dumps(value)
+
+        if use_json:
+            payload                 = json.dumps(value)
+        else:
+            payload                 = value
 
         # add current messgae to the queue
         self.queue[topic]   = payload

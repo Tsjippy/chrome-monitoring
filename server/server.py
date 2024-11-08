@@ -253,6 +253,7 @@ def update_history():
         else:
             totals[url] = int(spent)
 
+    total   = 0
     for url, spent in totals.items():
         if url == '':
             continue
@@ -262,6 +263,11 @@ def update_history():
 
         # Send to HA
         update_ha_sensors(user, url, spent)
+
+        total += spent
+
+    # Update total time
+    update_ha_sensors(user, 'Total Screen Time', total, False)
         
     return jsonify({
         'message': 'success!',
@@ -334,7 +340,7 @@ def setup_ha_devices(user):
             "identifiers": [
                 f"chrome_monitoring_{user}"
             ],
-            "name": "Chrome Monitoring",
+            "name": f"Chrome Monitoring {user.title()}",
             "model": "1",
             "manufacturer": "Ewald Harmsen"
         }
@@ -358,15 +364,14 @@ def create_ha_sensor(user, url):
         }
         
         users_ha[user]['mqtt_to_ha'].create_sensors( { index: users_ha[user]['mqtt_to_ha'].sensors[index]} )
-    
-    sensor  = users_ha[user]['sensors'][index]
 
-    return sensor
+    # Return the Sensor 
+    return users_ha[user]['mqtt_to_ha'].sensors[index]
 
-def update_ha_sensors(user, url, time):
+def update_ha_sensors(user, url, time, use_json=True):
     # Create sensor if needed
     sensor  = create_ha_sensor(user, url)
 
-    users_ha[user]['mqtt_to_ha'].send_value(sensor, time)
+    users_ha[user]['mqtt_to_ha'].send_value(sensor, time, use_json)
 
 app.run(host='0.0.0.0', port=flask_port)

@@ -5,12 +5,20 @@ let counter         = 0;
 let limits          = {};
 let serverAddress   = ''
 let username        = '';
+let lastLimitFetch  = 0;
 
 const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 20e3);
 chrome.runtime.onStartup.addListener(keepAlive);
 keepAlive();
 
 async function getLimits(){
+    // only run once every 30 seconds and if we have limits
+    if((Date.now() - lastLimitFetch) < 30000 && Object.keys(limits).length > 0){
+        return;
+    }
+
+    lastLimitFetch  = Date.now();
+
     // get website limits from the server
     let formData    = new FormData();
     formData.append('username', username)
