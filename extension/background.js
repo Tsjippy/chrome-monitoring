@@ -145,7 +145,7 @@ setInterval(async () => {
     // Reset tabtimes for a new day
     if(lastDate != dateStr){
         console.log(`Resetting tab times as we moved from ${lastDate} to ${dateStr}`);
-        lastDate    = dateStr;
+        lastDate    = dateStr
         tabTimes    = {};
     }
 
