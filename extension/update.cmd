@@ -1,0 +1,1 @@
+copy "\\192.168.0.202\pi\chrome-monitoring\extension\background.js" "%~dp0"
