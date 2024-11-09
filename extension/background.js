@@ -75,7 +75,7 @@ async function initialize(){
         type:       'basic'
     });
 
-    console.log('Notification send')
+    console.log('Notification send to browser')
 
     // get extension settings from sync
     syncStorage     = await chrome.storage.sync.get();
@@ -103,10 +103,13 @@ async function initialize(){
 
     let result      = await chrome.storage.local.get([dateStr]);
     
+    // We found some in storage
     if(result[dateStr] != undefined){
-        console.log(await chrome.storage.local.get());
+        //console.log(await chrome.storage.local.get());
         tabTimes    = result[dateStr];
     }
+
+    console.log("Retrieved these statistics from local storage:");
     console.log(tabTimes);
 
     // Clean up local storage
@@ -116,6 +119,8 @@ async function initialize(){
         if( key == 'history' || key == dateStr){
             continue;
         }
+
+        console.log(`Removing data for ${key} from local storage`);
         chrome.storage.local.remove([key]);
     }
 
@@ -198,9 +203,15 @@ async function request(url, formData=''){
 	try{
         response	= await result.json();
 	}catch (error){
-		console.error(result);
-		console.error(error);
-		return false;
+        console.error(result);
+        console.error(error);
+        try{
+            response	= await result.text();
+        }catch (error){
+            console.error(response);
+            console.error(error);
+            return false;
+        }
 	}
 
 	if(result.ok){
@@ -255,12 +266,7 @@ async function sendUsage(){
         await chrome.storage.local.set({'history': history });
         chrome.storage.local.get().then(res=>console.log(res));
     }else{
-        console.log(result);
-        console.log(result.message);
-
         limits  = result.limits
-
-        console.log(result.limits);
 
         limits = result.limits;
 	    
