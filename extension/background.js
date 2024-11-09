@@ -6,11 +6,23 @@ let limits          = {};
 let serverAddress   = ''
 let username        = '';
 let lastLimitFetch  = 0;
-let lastDate        = 0;
+let lastDate        = today();
 
 const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 20e3);
 chrome.runtime.onStartup.addListener(keepAlive);
 keepAlive();
+
+function today(){
+    // get stored usage from today
+    let d       = new Date();
+    let dateStr = d.toLocaleDateString("fr-CA", {
+        year:   "numeric",
+        month:  "2-digit",
+        day:    "2-digit",
+    });
+
+    return dateStr;
+}
 
 async function getLimits(){
     // only run once every 30 seconds and if we have limits
@@ -94,13 +106,7 @@ async function initialize(){
         }
     }
 
-    // get stored usage from today
-    let d       = new Date();
-    let dateStr = d.toLocaleDateString("fr-CA", {
-        year:   "numeric",
-        month:  "2-digit",
-        day:    "2-digit",
-    });
+    let dateStr     = today();
 
     let result      = await chrome.storage.local.get([dateStr]);
     
@@ -134,13 +140,7 @@ initialize();
 setInterval(async () => {
     counter++;
 
-    const d         = new Date();
-
-    let dateStr     = d.toLocaleDateString("fr-CA", {
-        year:   "numeric",
-        month:  "2-digit",
-        day:    "2-digit",
-    });
+    let dateStr = today();
 
     // Reset tabtimes for a new day
     if(lastDate != dateStr){
@@ -151,6 +151,8 @@ setInterval(async () => {
 
     // store tabtimes locally to use when rebooting extension or chrome
     chrome.storage.local.set({ [dateStr] : tabTimes });
+
+    console.log(`Seconds to go: ${300 - counter}`)
 
     // Send the usage every 5 minutes if a username is set in the extension options
     if((counter / 300 )  % 1 === 0 && username != ''){
@@ -234,21 +236,17 @@ async function request(url, formData=''){
 
 async function sendUsage(){
     let formData    = new FormData();
+
+    let dateStr     = today();
+
     const d         = new Date();
-
-    let dateStr     = d.toLocaleDateString("fr-CA", {
-        year:   "numeric",
-        month:  "2-digit",
-        day:    "2-digit",
-    });
-
     let timeStr     = d.toLocaleTimeString("nl-NL", {
         hour:   '2-digit', 
         minute: '2-digit'
     });
 
     // get offline history
-    result      = await chrome.storage.local.get(["history"]);
+    result          = await chrome.storage.local.get(["history"]);
 
     let history     = result.history;
 

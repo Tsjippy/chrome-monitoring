@@ -6,6 +6,8 @@ from mqtt_secrets import *
 #from paho.mqtt.enums import MQTTProtocolVersion
 #from paho.mqtt.enums import CallbackAPIVersion
 
+# https://developers.home-assistant.io/docs/core/entity/sensor/
+
 class MqqtToHa:
     def __init__(self, device, sensors={}):
         self.device         = device
