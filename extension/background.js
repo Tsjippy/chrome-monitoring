@@ -152,6 +152,7 @@ setInterval(async () => {
     // store tabtimes locally to use when rebooting extension or chrome
     chrome.storage.local.set({ [dateStr] : tabTimes });
 
+    // Send the usage every 5 minutes if a username is set in the extension options
     if((counter / 300 )  % 1 === 0 && username != ''){
         sendUsage();
     }

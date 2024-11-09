@@ -362,7 +362,7 @@ def create_ha_sensor(user, url):
         users_ha[user]['mqtt_to_ha'].sensors[index] = {
             "name":     url,
             "state":    "TOTAL_INCREASING",
-            "unit":     "min",
+            "unit":     "s",
             "type":     "DURATION"
         }
         
