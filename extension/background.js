@@ -6,6 +6,7 @@ let limits          = {};
 let serverAddress   = ''
 let username        = '';
 let lastLimitFetch  = 0;
+let lastDate        = 0;
 
 const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 20e3);
 chrome.runtime.onStartup.addListener(keepAlive);
@@ -141,6 +142,13 @@ setInterval(async () => {
         day:    "2-digit",
     });
 
+    // Reset tabtimes for a new day
+    if(lastDate != dateStr){
+        console.log(`Resetting tab times as we moved from ${lastDate} to ${dateStr}`);
+        lastDate    = dateStr;
+        tabTimes    = {};
+    }
+
     // store tabtimes locally to use when rebooting extension or chrome
     chrome.storage.local.set({ [dateStr] : tabTimes });
 
@@ -266,11 +274,9 @@ async function sendUsage(){
         await chrome.storage.local.set({'history': history });
         chrome.storage.local.get().then(res=>console.log(res));
     }else{
-        limits  = result.limits
-
-        limits = result.limits;
+        limits = result.limits
 	    
-	// upload previously stored data
+	    // upload previously stored data
         if( history != undefined){
             let succes  = true;
 

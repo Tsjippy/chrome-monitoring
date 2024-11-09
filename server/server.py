@@ -254,6 +254,7 @@ def update_history():
             totals[url] = int(spent)
 
     total   = 0
+    today   = datetime.now().strftime("%Y-%m-%d")
     for url, spent in totals.items():
         if url == '':
             continue
@@ -261,10 +262,12 @@ def update_history():
         values  = f"'{user}', '{url}', '{dateStr}', '{timeStr}', {spent}"
         db.add_db_entry('History', "'user', 'url', 'date', 'time', time_spent", values)
 
-        # Send to HA
-        update_ha_sensors(user, url, spent)
+        # Do not run for historical data
+        if dateStr == today:
+            # Send to HA
+            update_ha_sensors(user, url, spent)
 
-        total += spent
+            total += spent
 
     # Update total time
     update_ha_sensors(user, 'Total Screen Time', total, False)
