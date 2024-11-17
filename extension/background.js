@@ -387,5 +387,9 @@ function stripUrl(orgUrl){
         return url;
     }
 
-    return url.split(/\.(.*)/s)[1];
+    if(isNaN(url.split(/\.(.*)/s)[0])){
+        return url.split(/\.(.*)/s)[1];
+    }
+
+    return url;
 }
