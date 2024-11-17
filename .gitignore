@@ -1,3 +1,6 @@
 server/__pycache__/sql_functions.cpython-312.pyc
 server/__pycache__/website.cpython-312.pyc
 server/db.sqlite3
+*/_pychache_*
+*/__pycache__/*
+server/__pycache__/mqtt_to_ha.cpython-312.pyc
