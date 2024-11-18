@@ -152,11 +152,14 @@ setInterval(async () => {
     // store tabtimes locally to use when rebooting extension or chrome
     chrome.storage.local.set({ [dateStr] : tabTimes });
 
-    console.log(`Seconds to go: ${300 - counter}`)
+    console.log(`Seconds to go: ${30 - counter}`)
 
     // Send the usage every 5 minutes if a username is set in the extension options
-    if((counter / 300 )  % 1 === 0 && username != ''){
+    if((counter / 30 )  % 1 === 0 && username != ''){
         sendUsage();
+    }else{
+        console.log(username)
+        console.log(counter / 300)
     }
 
     let currentWindow   = await chrome.windows.getCurrent();
@@ -235,6 +238,8 @@ async function request(url, formData=''){
 }
 
 async function sendUsage(){
+    console.log('Sending usage')
+
     let formData    = new FormData();
 
     let dateStr     = today();
