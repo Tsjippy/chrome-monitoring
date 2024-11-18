@@ -157,9 +157,6 @@ setInterval(async () => {
     // Send the usage every 5 minutes if a username is set in the extension options
     if((counter / 30 )  % 1 === 0 && username != ''){
         sendUsage();
-    }else{
-        console.log(username)
-        console.log(counter / 300)
     }
 
     let currentWindow   = await chrome.windows.getCurrent();
