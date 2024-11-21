@@ -38,7 +38,7 @@ async function getLimits(){
 
     result          = await request(`get_limits`, formData);
 
-    if(result ){
+    if(result != null && result != undefined){
         limits  = result;
         
         // store for offline usage
@@ -152,10 +152,9 @@ setInterval(async () => {
     // store tabtimes locally to use when rebooting extension or chrome
     chrome.storage.local.set({ [dateStr] : tabTimes });
 
-    console.log(`Seconds to go: ${30 - counter}`)
-
     // Send the usage every 5 minutes if a username is set in the extension options
-    if((counter / 30 )  % 1 === 0 && username != ''){
+    if( counter >= 30  && username != ''){
+        counter = 0;
         sendUsage();
     }
 
@@ -214,15 +213,10 @@ async function request(url, formData=''){
 	try{
         response	= await result.json();
 	}catch (error){
+        console.error(`Url: ${url}`);
+        console.table([...formData.entries()]);
         console.error(result);
         console.error(error);
-        try{
-            response	= await result.text();
-        }catch (error){
-            console.error(response);
-            console.error(error);
-            return false;
-        }
 	}
 
 	if(result.ok){
