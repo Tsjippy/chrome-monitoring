@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 import json
 from mqtt_secrets import *
 import logger
+from datetime import time
 #from paho.mqtt.enums import MQTTProtocolVersion
 #from paho.mqtt.enums import CallbackAPIVersion
 
@@ -36,7 +37,7 @@ class MqqtToHa:
         if sensors  == '':
             sensors = self.sensors
 
-        for index,sensor in sensors.items():
+        for index, sensor in sensors.items():
             if 'sensortype' in sensor:
                 sensortype = sensor['sensortype']
             else:
@@ -71,7 +72,12 @@ class MqqtToHa:
             payload                                     = json.dumps(config_payload)
 
             # Send
-            result  = self.client.publish(topic=self.sensors[index]['base_topic'] + "/config", payload=payload, qos=1, retain=False)
+            result  = self.client.publish(
+                topic   = self.sensors[index]['base_topic'] + "/config", 
+                payload = payload, 
+                qos     = 1, 
+                retain  = True
+            )
 
             # Store
             self.sent[result.mid]    = payload
@@ -91,6 +97,31 @@ class MqqtToHa:
         client.subscribe("$SYS/#")
 
         client.subscribe("homeassistant/status")
+
+    def on_disconnect(self, client, userdata, rc):
+        self.logger.log_message('Disconnected from Home Assistant')
+        while True:
+            # loop until client.reconnect()
+            # returns 0, which means the
+            # client is connected
+            try:
+                self.logger.log_message('Trying to Reconnect to Home Assistant')
+                if not client.reconnect():
+                    self.logger.log_message('Reconnected')
+                    self.create_sensors()
+
+                    self.logger.log_message('Sensors created')
+                    break
+            except ConnectionRefusedError:
+                # if the server is not running,
+                # then the host rejects the connection
+                # and a ConnectionRefusedError is thrown
+                # getting this error > continue trying to
+                # connect
+                pass
+            # if the reconnect was not successful,
+            # wait 10 seconds
+            time.sleep(10)
 
     def on_message(self, client, userdata, message):
         if message.topic == 'homeassistant/status':
@@ -146,10 +177,11 @@ class MqqtToHa:
         self.logger.log_message('Starting application')
         #client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         self.client.username_pw_set(mqtt_username, mqtt_password)
-        self.client.on_connect   = self.on_connect
-        self.client.on_message   = self.on_message
-        self.client.on_log       = self.on_log
-        self.client.on_publish   = self.on_publish
+        self.client.on_connect      = self.on_connect
+        self.client.on_disconnect   = self.on_disconnect
+        self.client.on_message      = self.on_message
+        self.client.on_log          = self.on_log
+        self.client.on_publish      = self.on_publish
 
         self.logger.log_message('Connecting to Home Assistant')
         self.client.connect(mqtt_host, mqtt_port)
