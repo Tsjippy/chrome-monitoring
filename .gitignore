@@ -4,3 +4,5 @@ server/db.sqlite3
 */_pychache_*
 */__pycache__/*
 server/__pycache__/mqtt_to_ha.cpython-312.pyc
+log.log
+server/log.log

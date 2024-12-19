@@ -30,6 +30,11 @@ class DB:
 
         if not db_exists:
             self.create_db()
+        else:
+            self.connect_db()
+    
+    def __del__(self):
+        self.close_db()
 
     def connect_db(self):
         if os.path.isfile(db_path) and not os.access(db_path, os.W_OK):
@@ -51,11 +56,8 @@ class DB:
                 self.con.executescript(file.read())
         except:
             print('do I have permission to write to '+db_path+'?')
-            
-        self.close_db()
 
     def get_db_data(self, query, dict=True):
-        self.connect_db()
 
         logger.info('Running query: ' + query)
         cur = self.con.execute(query)
@@ -81,12 +83,9 @@ class DB:
                 for col_nr, value in enumerate(row):
                     data[row_nr].append(value)
 
-        self.close_db()
-
         return data
 
     def update_db_data(self, query):
-        self.connect_db()
 
         logger.info('Running query: ' + query)
 
@@ -95,15 +94,10 @@ class DB:
         cur = self.con.execute(query)
         self.con.commit()
 
-        self.close_db()
-
         return cur.lastrowid
 
     def add_db_entry(self, table, names, values):
         try:
-            self.close_db()
-
-            self.connect_db()
 
             query = f'INSERT INTO {table} ('+ names +') VALUES('+values+')'
 
@@ -113,20 +107,15 @@ class DB:
             cur = self.con.execute(query)
             self.con.commit()
             id  = cur.lastrowid
-            
-            self.close_db()
 
             return id
         except:
             print('do I have permission to write to '+db_path+'?')
 
     def update_el_in_db(self, table, column, value, where):     
-        self.connect_db()
 
         query           = f'UPDATE {table} SET {column}= "{value}" WHERE {where}'
         self.update_db_data(query)
-
-        self.close_db()
 
     def close_db(self):
         self.con.close()
