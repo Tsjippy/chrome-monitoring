@@ -100,20 +100,25 @@ class DB:
         return cur.lastrowid
 
     def add_db_entry(self, table, names, values):
-        self.connect_db()
+        try:
+            self.close_db()
 
-        query = f'INSERT INTO {table} ('+ names +') VALUES('+values+')'
+            self.connect_db()
 
-        print(query)
+            query = f'INSERT INTO {table} ('+ names +') VALUES('+values+')'
 
-        logger.info(query)
-        cur = self.con.execute(query)
-        self.con.commit()
-        id  = cur.lastrowid
-        
-        self.close_db()
+            print(query)
 
-        return id
+            logger.info(query)
+            cur = self.con.execute(query)
+            self.con.commit()
+            id  = cur.lastrowid
+            
+            self.close_db()
+
+            return id
+        except:
+            print('do I have permission to write to '+db_path+'?')
 
     def update_el_in_db(self, table, column, value, where):     
         self.connect_db()

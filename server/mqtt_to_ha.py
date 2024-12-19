@@ -15,6 +15,14 @@ class MqqtToHa:
         self.device         = device
         self.sensors        = sensors
 
+        if 'last_message' not in self.sensors:
+            self.sensors['last_message'] = {
+                'name': 'Last Message',
+                "state": "measurement",
+                'type': 'timestamp',
+                'icon': 'mdi:clock-check'
+            }
+
         #Store send commands till they are received
         self.sent           = {}
         self.queue          = {}
@@ -76,7 +84,7 @@ class MqqtToHa:
                 topic   = self.sensors[index]['base_topic'] + "/config", 
                 payload = payload, 
                 qos     = 1, 
-                retain  = True
+                retain  = False
             )
 
             # Store
@@ -86,6 +94,23 @@ class MqqtToHa:
                 self.send_value(sensor['name'], sensor['init'])
 
         self.logger.log_message('Sensors created')
+
+    def delete_sensor(self, url, sensortype='sensor'):
+        device_id       = self.device['identifiers'][0]
+        device_name     = self.device['name'].lower().replace(" ", "_")
+        unique_id       = url.replace(' ', '_').replace('.', '_').replace(':', '__').lower()
+        unique_id       = f"{device_name}_{unique_id}"
+        base_topic      = f"homeassistant/{sensortype}/{device_id}/{unique_id}"
+
+        result  = self.client.publish(
+            topic   = base_topic + "/config", 
+            payload = '', 
+            qos     = 1, 
+            retain  = False
+        )
+
+        # Store
+        self.sent[result.mid]    = ''
 
     def on_connect(self, client, userdata, flags, reason_code):
         self.logger.log_message(f"Connected with result code {reason_code}")

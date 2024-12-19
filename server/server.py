@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request, render_template, flash, json
-import sql_functions
 from datetime import datetime
+import sql_functions
+import threading
+import time
 import mqtt_to_ha
 
 app = Flask(__name__)
@@ -377,4 +379,47 @@ def update_ha_sensors(user, url, time, use_json=True):
 
     users_ha[user]['mqtt_to_ha'].send_value(sensor, time, use_json)
 
-app.run(host='0.0.0.0', port=flask_port)
+def web():
+    app.run(host='0.0.0.0', port=flask_port)
+
+def recreate_sensors():
+    users = db.get_db_data('SELECT DISTINCT user FROM History ORDER BY user')
+    
+    for user in users:
+        user    = user['user']
+
+        # Create device if needed
+        setup_ha_devices(user)
+
+        skip    = []
+
+        # Create sensors
+        entries    = db.get_db_data(f'SELECT * FROM History WHERE user = "{user}" and date = "{ datetime.now().strftime("%Y-%m-%d")}"')
+
+        for entry in entries:
+            print(f"Creating sensor for {entry['url']}")
+            update_ha_sensors(user, entry['url'], entry['time_spent'])
+
+            skip.append(entry['url'])
+
+        urls    = db.get_db_data(f'SELECT DISTINCT URL FROM History WHERE user = "{user}"')
+        for url in urls:
+            url = url['url']
+            if url in skip:
+                continue
+
+            # Delete sensor
+            users_ha[user]['mqtt_to_ha'].delete_sensor(url)
+
+if __name__ == '__main__':
+    threading.Thread(target=web, daemon=True).start()
+
+    recreate_sensors()
+
+    while True:
+        
+        for user in users_ha:
+            timestring  = str(datetime.now(datetime.now().astimezone().tzinfo).isoformat())
+            update_ha_sensors(user, 'last_message', timestring, False)
+
+        time.sleep(60)
