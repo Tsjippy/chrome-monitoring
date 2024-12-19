@@ -410,16 +410,26 @@ def recreate_sensors():
 
             # Delete sensor
             users_ha[user]['mqtt_to_ha'].delete_sensor(url)
+        
+        update_ha_sensors(user, 'Total Screen Time', 0, False)
 
 if __name__ == '__main__':
     threading.Thread(target=web, daemon=True).start()
 
     recreate_sensors()
 
+    last_date   = datetime.now().strftime("%Y-%m-%d")
+
     while True:
         
         for user in users_ha:
             timestring  = str(datetime.now(datetime.now().astimezone().tzinfo).isoformat())
             update_ha_sensors(user, 'last_message', timestring, False)
+
+        # New day
+        if datetime.now().strftime("%Y-%m-%d") > last_date:
+            recreate_sensors()
+
+            last_date   = datetime.now().strftime("%Y-%m-%d")
 
         time.sleep(60)

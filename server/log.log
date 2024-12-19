@@ -50,3 +50,12 @@
 19-12-2024 10:38 - mqtt_to_ha.py:202 -      info    - Starting application
 19-12-2024 10:38 - mqtt_to_ha.py:211 -      info    - Connecting to Home Assistant
 19-12-2024 10:38 - mqtt_to_ha.py:116 -      info    - Connected with result code 0
+19-12-2024 10:43 - mqtt_to_ha.py:202 -      info    - Starting application
+19-12-2024 10:43 - mqtt_to_ha.py:211 -      info    - Connecting to Home Assistant
+19-12-2024 10:43 - mqtt_to_ha.py:116 -      info    - Connected with result code 0
+19-12-2024 10:43 - mqtt_to_ha.py:40 -       info    - Creating Sensors
+19-12-2024 10:43 - mqtt_to_ha.py:58 -       info    - Creating sensor 'Total Screen Time' with unique id chrome_monitoring_ewald_total_screen_time
+19-12-2024 10:43 - mqtt_to_ha.py:96 -       info    - Sensors created
+19-12-2024 10:43 - mqtt_to_ha.py:202 -      info    - Starting application
+19-12-2024 10:43 - mqtt_to_ha.py:211 -      info    - Connecting to Home Assistant
+19-12-2024 10:43 - mqtt_to_ha.py:116 -      info    - Connected with result code 0
