@@ -380,7 +380,21 @@ def update_ha_sensors(user, url, time, use_json=True):
     users_ha[user]['mqtt_to_ha'].send_value(sensor, time, use_json)
 
 def web():
-    app.run(host='0.0.0.0', port=flask_port)
+    last_date   = datetime.now().strftime("%Y-%m-%d")
+
+    while True:
+        
+        for user in users_ha:
+            timestring  = str(datetime.now(datetime.now().astimezone().tzinfo).isoformat())
+            update_ha_sensors(user, 'last_message', timestring, False)
+
+        # New day
+        if datetime.now().strftime("%Y-%m-%d") > last_date:
+            recreate_sensors()
+
+            last_date   = datetime.now().strftime("%Y-%m-%d")
+
+        time.sleep(60)
 
 def recreate_sensors():
     users = db.get_db_data('SELECT DISTINCT user FROM History ORDER BY user')
@@ -418,18 +432,4 @@ if __name__ == '__main__':
 
     recreate_sensors()
 
-    last_date   = datetime.now().strftime("%Y-%m-%d")
-
-    while True:
-        
-        for user in users_ha:
-            timestring  = str(datetime.now(datetime.now().astimezone().tzinfo).isoformat())
-            update_ha_sensors(user, 'last_message', timestring, False)
-
-        # New day
-        if datetime.now().strftime("%Y-%m-%d") > last_date:
-            recreate_sensors()
-
-            last_date   = datetime.now().strftime("%Y-%m-%d")
-
-        time.sleep(60)
+    app.run(host='0.0.0.0', port=flask_port)

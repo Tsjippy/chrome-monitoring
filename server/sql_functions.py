@@ -35,7 +35,7 @@ class DB:
         if os.path.isfile(db_path) and not os.access(db_path, os.W_OK):
             raise Exception("Database is not writable!")
         
-        self.con    = sqlite3.connect(db_path)
+        self.con    = sqlite3.connect(db_path, check_same_thread=False)
 
     def create_db(self):
         if not os.access(resource_path(), os.W_OK):
