@@ -7,6 +7,7 @@
 - favicon
 - minutes label
 - temperary limits
+- log message
 
 ### Changed
 - display time
