@@ -47,9 +47,9 @@ class MqqtToHa:
 
         for index, sensor in sensors.items():
             if 'sensortype' in sensor:
-                sensortype = sensor['sensortype']
+                sensortype                      = sensor['sensortype']
             else:
-                sensortype  = 'sensor'
+                sensortype                      = 'sensor'
 
             unique_id                           = sensor['name'].replace(' ', '_').replace('.', '_').replace(':', '__').lower()
             unique_id                           = f"{device_name}_{unique_id}"
@@ -104,9 +104,9 @@ class MqqtToHa:
 
         result  = self.client.publish(
             topic   = base_topic + "/config", 
-            payload = '', 
-            qos     = 1, 
-            retain  = False
+            payload = None, 
+            qos     = 0, 
+            retain  = True
         )
 
         # Store
