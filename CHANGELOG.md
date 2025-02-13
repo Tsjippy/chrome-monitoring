@@ -25,6 +25,7 @@
 - post and get params
 - error
 - remove duplicates
+- delteing entities
 
 ## [1.0.0] - 2020-06-15
 
