@@ -96,6 +96,8 @@ class MqqtToHa:
         self.logger.log_message('Sensors created')
 
     def delete_sensor(self, url, sensortype='sensor'):
+        self.logger.log_message(f'Deleting sensor for url "{url}"')
+
         device_id       = self.device['identifiers'][0]
         device_name     = self.device['name'].lower().replace(" ", "_")
         unique_id       = url.replace(' ', '_').replace('.', '_').replace(':', '__').lower()
