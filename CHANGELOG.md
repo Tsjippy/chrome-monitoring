@@ -11,6 +11,7 @@
 
 ### Changed
 - display time
+- keep old sensors
 
 ### Fixed
 
