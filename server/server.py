@@ -443,7 +443,7 @@ def recreate_sensors():
                 continue
 
             # Current value is 0 seconds
-            print(f"Creating sensor for {entry['url']}")
+            print(f"Creating sensor for {url}")
             update_ha_sensor(user, url, 0)
         
         update_ha_sensor(user, 'Total Screen Time', users_ha[user]['total'], False)
