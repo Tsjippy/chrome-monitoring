@@ -387,6 +387,7 @@ def web():
         for user in users_ha:
             timestring  = str(datetime.now(datetime.now().astimezone().tzinfo).isoformat())
             update_ha_sensors(user, 'last_message', timestring, False)
+            update_ha_sensors(user, 'Total Screen Time', user['total'], False)
 
         # New day
         if datetime.now().strftime("%Y-%m-%d") > last_date:
@@ -410,11 +411,14 @@ def recreate_sensors():
         # Create sensors
         entries    = db.get_db_data(f'SELECT * FROM History WHERE user = "{user}" and date = "{ datetime.now().strftime("%Y-%m-%d")}"')
 
+        users_ha[user]['total']   = 0
         for entry in entries:
             print(f"Creating sensor for {entry['url']}")
             update_ha_sensors(user, entry['url'], entry['time_spent'])
 
             skip.append(entry['url'])
+
+            users_ha[user]['total'] += entry['time_spent']
 
         urls    = db.get_db_data(f'SELECT DISTINCT URL FROM History WHERE user = "{user}"')
         for url in urls:
