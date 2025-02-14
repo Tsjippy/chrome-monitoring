@@ -99,7 +99,7 @@ class DB:
     def add_db_entry(self, table, names, values):
         try:
 
-            query = f'INSERT INTO {table} ('+ names +') VALUES('+values+')'
+            query = f'INSERT INTO {table} ({names}) VALUES({values})'
 
             print(query)
 
@@ -110,7 +110,7 @@ class DB:
 
             return id
         except:
-            print('do I have permission to write to '+db_path+'?')
+            print(f'do I have permission to write to {db_path}?')
 
     def update_el_in_db(self, table, column, value, where):     
 

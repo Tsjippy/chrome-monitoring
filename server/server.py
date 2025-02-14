@@ -242,7 +242,7 @@ def update_history():
     tabtimes    = json.loads(tabtimes)
     print(tabtimes)
 
-    # check if there are duplicate urls for which should total the times spent
+    # check if there are duplicate urls for which we should total the times spent
     totals      = {}
     for url, spent in tabtimes.items():
         if url == 'undefined':
@@ -417,11 +417,15 @@ def recreate_sensors():
 
         skip        = []
 
-        # Create sensors
-        entries    = db.get_db_data(f'SELECT * FROM History WHERE user = "{user}" and date = "{ datetime.now().strftime("%Y-%m-%d")}"')
+        # Get all entries for today
+        entries    = db.get_db_data(f'SELECT * FROM History WHERE user = "{user}" and date = "{ datetime.now().strftime("%Y-%m-%d")}" ORDER By time_spent DESC')
 
         users_ha[user]['total']   = 0
         for entry in entries:
+            # Do not add the same url twice
+            if entry['url'] in skip:
+                continue
+
             print(f"Creating sensor for {entry['url']}")
 
             # Use the time spent today as a value
