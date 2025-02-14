@@ -267,12 +267,12 @@ def update_history():
         # Do not run for historical data
         if dateStr == today:
             # Send to HA
-            update_ha_sensors(user, url, spent)
+            update_ha_sensor(user, url, spent)
 
             total += spent
 
     # Update total time
-    update_ha_sensors(user, 'Total Screen Time', total, False)
+    update_ha_sensor(user, 'Total Screen Time', total, False)
         
     return jsonify({
         'message': 'success!',
@@ -351,7 +351,7 @@ def setup_ha_devices(user):
         }
 
         #To Ha Instance
-        users_ha[user]['mqtt_to_ha']   = mqtt_to_ha.MqqtToHa(users_ha[user]['device'])
+        users_ha[user]['mqtt_to_ha']   = mqtt_to_ha.MqqtToHa(users_ha[user]['device'], {})
 
 def create_ha_sensor(user, url):
     # Create device if needed
@@ -361,19 +361,28 @@ def create_ha_sensor(user, url):
 
     # Only create if needed
     if not index in users_ha[user]['mqtt_to_ha'].sensors:
-        users_ha[user]['mqtt_to_ha'].sensors[index] = {
-            "name":     url,
-            "state":    "TOTAL_INCREASING",
-            "unit":     "s",
-            "type":     "DURATION"
-        }
+
+        if index == 'last_message':
+            users_ha[user]['mqtt_to_ha'].sensors[index] = {
+                'name': 'Last Message',
+                "state": "measurement",
+                'type': 'timestamp',
+                'icon': 'mdi:clock-check'
+            }
+        else:
+            users_ha[user]['mqtt_to_ha'].sensors[index] = {
+                "name":     url,
+                "state":    "TOTAL_INCREASING",
+                "unit":     "s",
+                "type":     "DURATION"
+            }
         
         users_ha[user]['mqtt_to_ha'].create_sensors( { index: users_ha[user]['mqtt_to_ha'].sensors[index]} )
 
     # Return the Sensor 
     return users_ha[user]['mqtt_to_ha'].sensors[index]
 
-def update_ha_sensors(user, url, time, use_json=True):
+def update_ha_sensor(user, url, time, use_json=True):
     # Create sensor if needed
     sensor  = create_ha_sensor(user, url)
 
@@ -386,8 +395,8 @@ def web():
         
         for user in users_ha:
             timestring  = str(datetime.now(datetime.now().astimezone().tzinfo).isoformat())
-            update_ha_sensors(user, 'last_message', timestring, False)
-            update_ha_sensors(user, 'Total Screen Time', user['total'], False)
+            update_ha_sensor(user, 'last_message', timestring, False)
+            update_ha_sensor(user, 'Total Screen Time', users_ha[user]['total'], False)
 
         # New day
         if datetime.now().strftime("%Y-%m-%d") > last_date:
@@ -406,7 +415,7 @@ def recreate_sensors():
         # Create device if needed
         setup_ha_devices(user)
 
-        skip    = []
+        skip        = []
 
         # Create sensors
         entries    = db.get_db_data(f'SELECT * FROM History WHERE user = "{user}" and date = "{ datetime.now().strftime("%Y-%m-%d")}"')
@@ -414,26 +423,30 @@ def recreate_sensors():
         users_ha[user]['total']   = 0
         for entry in entries:
             print(f"Creating sensor for {entry['url']}")
-            update_ha_sensors(user, entry['url'], entry['time_spent'])
+
+            # Use the time spent today as a value
+            update_ha_sensor(user, entry['url'], entry['time_spent'])
 
             skip.append(entry['url'])
 
             users_ha[user]['total'] += entry['time_spent']
 
+        # Create sensors for all urls visited in the past
         urls    = db.get_db_data(f'SELECT DISTINCT URL FROM History WHERE user = "{user}"')
         for url in urls:
             url = url['url']
             if url in skip:
                 continue
 
-            # Delete sensor
-            users_ha[user]['mqtt_to_ha'].delete_sensor(url)
+            # Current value is 0 seconds
+            print(f"Creating sensor for {entry['url']}")
+            update_ha_sensor(user, url, 0)
         
-        update_ha_sensors(user, 'Total Screen Time', 0, False)
+        update_ha_sensor(user, 'Total Screen Time', users_ha[user]['total'], False)
 
 if __name__ == '__main__':
-    threading.Thread(target=web, daemon=True).start()
-
     recreate_sensors()
+
+    threading.Thread(target=web, daemon=True).start()
 
     app.run(host='0.0.0.0', port=flask_port)

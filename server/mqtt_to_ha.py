@@ -15,14 +15,6 @@ class MqqtToHa:
         self.device         = device
         self.sensors        = sensors
 
-        if 'last_message' not in self.sensors:
-            self.sensors['last_message'] = {
-                'name': 'Last Message',
-                "state": "measurement",
-                'type': 'timestamp',
-                'icon': 'mdi:clock-check'
-            }
-
         #Store send commands till they are received
         self.sent           = {}
         self.queue          = {}
@@ -37,13 +29,14 @@ class MqqtToHa:
         return f"{self.device.name}"
 
     def create_sensors(self, sensors=''):
-        self.logger.log_message('Creating Sensors')
-        
         device_id       = self.device['identifiers'][0]
         device_name     = self.device['name'].lower().replace(" ", "_")
 
         if sensors  == '':
             sensors = self.sensors
+
+        if len(sensors) > 1:
+           self.logger.log_message(f"Creating {str(len(sensors))} Sensors")
 
         for index, sensor in sensors.items():
             if 'sensortype' in sensor:
@@ -93,15 +86,20 @@ class MqqtToHa:
             if('init' in sensor):
                 self.send_value(sensor['name'], sensor['init'])
 
-        self.logger.log_message('Sensors created')
+        msg = "Sensor created"
+        
+        if len(sensors) > 1:
+            msg = 'Sensors created'
+        self.logger.log_message(msg)
 
     def delete_sensor(self, url, sensortype='sensor'):
-        self.logger.log_message(f'Deleting sensor for url "{url}"')
-
         device_id       = self.device['identifiers'][0]
         device_name     = self.device['name'].lower().replace(" ", "_")
         unique_id       = url.replace(' ', '_').replace('.', '_').replace(':', '__').lower()
         unique_id       = f"{device_name}_{unique_id}"
+
+        self.logger.log_message(f"Deleting sensor '{url}' with unique id {unique_id}")
+
         base_topic      = f"homeassistant/{sensortype}/{device_id}/{unique_id}"
 
         result  = self.client.publish(
@@ -175,7 +173,8 @@ class MqqtToHa:
         #self.logger.log_message(send[mid] )
 
         #Remove from send dict
-        del self.sent[mid]
+        if mid in self.sent:
+            del self.sent[mid]
 
     # Sends a sensor value
     def send_value(self, sensor, value, use_json=True):
